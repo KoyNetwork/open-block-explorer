@@ -567,10 +567,10 @@ export default defineComponent({
                         @click="openResourcesDialog = true"
                     />
                 </div>
-                <div v-if="isAccount && !accountPageSettings.hideRexControl" class="col-3">
+                <div v-if="isAccount" class="col-3">
                     <q-btn
                         :disable="tokensLoading || isLoading"
-                        :label='tokensLoading ? "Loading..." : "Staking (REX)"'
+                        :label='tokensLoading ? "Loading..." : "Staking"'
                         class="ellipsis full-width"
                         color="primary"
                         @click="openStakingDialog = true"

@@ -2,12 +2,12 @@
 import { computed, defineComponent, PropType, ref } from 'vue';
 import { Token } from 'src/types';
 import StakingInfo from 'src/components/staking/StakingInfo.vue';
-import StakeFromResources from 'src/components/staking/StakeFromResources.vue';
+// import StakeFromResources from 'src/components/staking/StakeFromResources.vue';
 import ProcessingTab from 'src/components/staking/ProcessingTab.vue';
 import StakingTab from 'src/components/staking/StakingTab.vue';
 import UnstakingTab from 'src/components/staking/UnstakingTab.vue';
 import HistoryTab from 'src/components/staking/HistoryTab.vue';
-import SavingsTab from 'src/components/staking/SavingsTab.vue';
+// import SavingsTab from 'src/components/staking/SavingsTab.vue';
 import { getChain } from 'src/config/ConfigManager';
 import { API } from '@greymass/eosio';
 import { formatCurrency } from 'src/utils/string-utils';
@@ -20,12 +20,12 @@ export default defineComponent({
     name: 'StakingDialog',
     components: {
         StakingInfo,
-        StakeFromResources,
+        // StakeFromResources,
         ProcessingTab,
         StakingTab,
         UnstakingTab,
         HistoryTab,
-        SavingsTab,
+        // SavingsTab,
     },
     data() {
         return {
@@ -190,8 +190,8 @@ export default defineComponent({
                         >
                             <q-tab name="stake" label="Stake"/>
                             <q-tab name="unstake" label="Unstake"/>
-                            <q-tab name="stakecpunet" label="Stake from CPU/NET"/>
-                            <q-tab name="savings" label="Savings"/>
+                            <!-- <q-tab name="stakecpunet" label="Stake from CPU/NET"/> -->
+                            <!-- <q-tab name="savings" label="Savings"/> -->
                             <q-tab name="maturing" label="Maturing"/>
                             <q-tab name="history" label="History"/>
                         </q-tabs>
@@ -203,12 +203,12 @@ export default defineComponent({
                             <q-tab-panel name="unstake">
                                 <UnstakingTab/>
                             </q-tab-panel>
-                            <q-tab-panel name="stakecpunet">
+                            <!-- <q-tab-panel name="stakecpunet">
                                 <StakeFromResources/>
-                            </q-tab-panel>
-                            <q-tab-panel name="savings">
+                            </q-tab-panel> -->
+                            <!-- <q-tab-panel name="savings">
                                 <SavingsTab/>
-                            </q-tab-panel>
+                            </q-tab-panel> -->
                             <q-tab-panel name="maturing">
                                 <ProcessingTab/>
                             </q-tab-panel>
