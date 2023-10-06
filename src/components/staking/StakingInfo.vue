@@ -1,8 +1,9 @@
 <script lang="ts">
-import { defineComponent, ref, computed } from 'vue';
+import { defineComponent, ref, computed, onMounted } from 'vue';
 import { getChain } from 'src/config/ConfigManager';
+import { api } from 'src/api';
 import { API } from '@greymass/eosio';
-import { Token } from 'src/types';
+import { Token, GetTableRowsParams, AccountsRows } from 'src/types';
 import { useChainStore } from 'src/stores/chain';
 import { useAccountStore } from 'src/stores/account';
 
@@ -18,12 +19,37 @@ export default defineComponent({
         const total = ref<string>('0');
         const token = computed((): Token => chainStore.token);
         const accountData = computed(() => accountStore.data as API.v1.AccountObject);
-        const liquidBalance = computed(() => accountData.value.core_liquid_balance);
+        const accountName = computed((): string => accountStore.account.accountName);
+        const liquidValue = ref<number>(0);
+        const liquidBalance = computed(() => accountData.value.core_liquid_balance ?? liquidValue);
         const rexInfo = computed(() => accountData.value.rex_info);
         const coreRexBalance = computed(() => accountStore.coreRexBalance);
         const maturingRex = computed(() => accountStore.maturingRex);
         const maturedRex = computed(() => accountStore.maturedRex);
         const rexSavings = computed(() => accountStore.savingsRex);
+
+        const loadLiquidBalance = async () => {
+            try {
+                const paramsStakedBal = {
+                    code: 'eosio.token',
+                    scope: accountName.value,
+                    table: 'accounts',
+                } as GetTableRowsParams;
+
+                const stakedBalRow = ((await api.getTableRows(paramsStakedBal)) as AccountsRows)
+                    .rows[0];
+
+                liquidValue.value = Number(stakedBalRow.balance?.split(' ')[0]);
+            } catch (e) {
+                liquidValue.value = 0;
+            }
+        };
+
+        onMounted(async () => {
+            if (!accountStore.data.core_liquid_balance) {
+                await loadLiquidBalance();
+            }
+        });
 
         return {
             symbol,

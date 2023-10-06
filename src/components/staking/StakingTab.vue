@@ -1,11 +1,13 @@
 <script lang="ts">
-import { defineComponent, ref, computed } from 'vue';
+import { defineComponent, ref, computed, onMounted } from 'vue';
 import ViewTransaction from 'src/components/ViewTransanction.vue';
 import { getChain } from 'src/config/ConfigManager';
 import { API } from '@greymass/eosio';
+import { api } from 'src/api';
 import { assetToAmount } from 'src/utils/string-utils';
 import { useAccountStore } from 'src/stores/account';
 import { useChainStore } from 'src/stores/chain';
+import { GetTableRowsParams, AccountsRows } from 'src/types';
 
 const chain = getChain();
 
@@ -23,11 +25,14 @@ export default defineComponent({
         const transactionId = computed((): string => accountStore.TransactionId);
         const transactionError = computed(() => accountStore.TransactionError);
         const accountData = computed(() => accountStore.data as API.v1.AccountObject);
+        const accountName = computed((): string => accountStore.account.accountName);
         const rexInfo = computed(() => accountStore.data.rex_info);
         const rexbal = computed(() => accountStore.rexbal);
         const maturedRex = computed(() => accountStore.maturedRex);
+
+        const liquidValue = ref<number>(0);
         const liquidBalance = computed(
-            () => accountData.value?.core_liquid_balance.value,
+            () => accountData.value?.core_liquid_balance?.value ?? liquidValue.value,
         );
 
         const inputRules = computed((): Array<(data: string) => boolean | string> => [
@@ -72,6 +77,29 @@ export default defineComponent({
             ).toString();
             void formatDec();
         }
+
+        const loadLiquidBalance = async () => {
+            try {
+                const paramsStakedBal = {
+                    code: 'eosio.token',
+                    scope: accountName.value,
+                    table: 'accounts',
+                } as GetTableRowsParams;
+
+                const stakedBalRow = ((await api.getTableRows(paramsStakedBal)) as AccountsRows)
+                    .rows[0];
+
+                liquidValue.value = Number(stakedBalRow.balance?.split(' ')[0]);
+            } catch (e) {
+                liquidValue.value = 0;
+            }
+        };
+
+        onMounted(async () => {
+            if (!accountStore.account.data.core_liquid_balance) {
+                await loadLiquidBalance();
+            }
+        });
 
         return {
             openTransaction,

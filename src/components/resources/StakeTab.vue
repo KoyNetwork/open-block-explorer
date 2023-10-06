@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, ref, computed } from 'vue';
+import { defineComponent, ref, computed, onMounted } from 'vue';
 import ViewTransaction from 'src/components/ViewTransanction.vue';
 import { getChain } from 'src/config/ConfigManager';
 import { formatCurrency, isValidAccount } from 'src/utils/string-utils';
@@ -7,6 +7,8 @@ import { assetToAmount } from 'src/utils/string-utils';
 import { useAccountStore } from 'src/stores/account';
 import { useResourceStore } from 'src/stores/resources';
 import { useChainStore } from 'src/stores/chain';
+import { AccountsRows, GetTableRowsParams } from 'src/types';
+import { api } from 'src/api';
 
 const chain = getChain();
 const symbol = chain.getSystemToken().symbol;
@@ -22,9 +24,10 @@ export default defineComponent({
         const chainStore = useChainStore();
         const openTransaction = ref<boolean>(false);
         const stakingAccount = ref<string>(accountStore.accountName || '');
+        const liquidValue = ref<number>(0);
         const accountTotal = computed((): string =>
-            (accountStore.data.core_liquid_balance ?? 0).toString(),
-        );
+            (accountStore.data.core_liquid_balance ?? liquidValue.value).toString());
+
         const accountTotalAsNumber = computed(() => assetToAmount(accountTotal.value));
         const cpuTokens = ref<string>('0');
         const netTokens = ref<string>('0');
@@ -49,6 +52,29 @@ export default defineComponent({
                     .replace(/[^0-9.]/g, '');
             }
         }
+
+        const loadLiquidBalance = async () => {
+            try {
+                const paramsStakedBal = {
+                    code: 'eosio.token',
+                    scope: stakingAccount.value,
+                    table: 'accounts',
+                } as GetTableRowsParams;
+
+                const stakedBalRow = ((await api.getTableRows(paramsStakedBal)) as AccountsRows)
+                    .rows[0];
+
+                liquidValue.value = Number(stakedBalRow.balance?.split(' ')[0]);
+            } catch (e) {
+                liquidValue.value = 0;
+            }
+        };
+
+        onMounted(async () => {
+            if (!accountStore.data.core_liquid_balance) {
+                await loadLiquidBalance();
+            }
+        });
 
         return {
             openTransaction,

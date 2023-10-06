@@ -15,7 +15,7 @@ import { API, UInt64 } from '@greymass/eosio';
 import { formatCurrency } from 'src/utils/string-utils';
 import ConfigManager from 'src/config/ConfigManager';
 import { AccountPageSettings } from 'src/types/UiCustomization';
-import { StakedbalRows } from 'src/types/TableRows';
+import { AccountsRows, StakedbalRows } from 'src/types/TableRows';
 import { useResourceStore } from 'src/stores/resources';
 import { useChainStore } from 'src/stores/chain';
 import { useAccountStore } from 'src/stores/account';
@@ -101,9 +101,10 @@ export default defineComponent({
 
         const token = computed((): Token => chainStore.token);
 
+        const liquidValue = ref<number>(0);
         const liquidNative = computed((): number => accountData.value?.core_liquid_balance?.value
             ? accountData.value.core_liquid_balance.value
-            : 0);
+            : liquidValue.value);
 
         const totalValue = computed((): number => {
             if (typeof totalTokens.value === 'number') {
@@ -141,6 +142,9 @@ export default defineComponent({
             try {
                 isLoading.value = true;
                 accountData.value = await api.getAccount(props.account);
+                if (!accountData.value?.core_liquid_balance) {
+                    await loadLiquidBalance();
+                }
                 await loadAccountCreatorInfo();
                 await loadProfile();
                 await loadBalances();
@@ -307,6 +311,23 @@ export default defineComponent({
 
             const total = totalRex > 0 ? tlosRexRatio * totalRexBalance : 0.0;
             return total;
+        };
+
+        const loadLiquidBalance = async () => {
+            try {
+                const paramsStakedBal = {
+                    code: 'eosio.token',
+                    scope: props.account as unknown as TableIndexType,
+                    table: 'accounts',
+                } as GetTableRowsParams;
+
+                const stakedBalRow = ((await api.getTableRows(paramsStakedBal)) as AccountsRows)
+                    .rows[0];
+
+                liquidValue.value = Number(stakedBalRow.balance?.split(' ')[0]);
+            } catch (e) {
+                liquidValue.value = 0;
+            }
         };
 
         const loadStakedBalance = async () => {
