@@ -15,7 +15,6 @@ import { API, UInt64 } from '@greymass/eosio';
 import { formatCurrency } from 'src/utils/string-utils';
 import ConfigManager from 'src/config/ConfigManager';
 import { AccountPageSettings } from 'src/types/UiCustomization';
-import { AccountsRows, StakedbalRows } from 'src/types/TableRows';
 import { useResourceStore } from 'src/stores/resources';
 import { useChainStore } from 'src/stores/chain';
 import { useAccountStore } from 'src/stores/account';
@@ -79,8 +78,8 @@ export default defineComponent({
         const radius = ref(44);
         const stakedResources = ref(0);
 
-        const stakedBal = ref(0);
-        const unstakedBal = ref(0);
+        const stakedBal = computed((): number => accountStore.stakedBal);
+        const unstakedBal = computed((): number => store.state.account.unstakedNal);
 
         const accountExists = ref<boolean>(true);
         const openSendDialog = ref<boolean>(false);
@@ -101,7 +100,7 @@ export default defineComponent({
 
         const token = computed((): Token => chainStore.token);
 
-        const liquidValue = ref<number>(0);
+        const liquidValue = computed((): number => store.state.account.liquidValue);
         const liquidNative = computed((): number => accountData.value?.core_liquid_balance?.value
             ? accountData.value.core_liquid_balance.value
             : liquidValue.value);
@@ -142,14 +141,13 @@ export default defineComponent({
             try {
                 isLoading.value = true;
                 accountData.value = await api.getAccount(props.account);
-                if (!accountData.value?.core_liquid_balance) {
-                    await loadLiquidBalance();
-                }
                 await loadAccountCreatorInfo();
                 await loadProfile();
                 await loadBalances();
                 loadResources();
-                await loadStakedBalance();
+                await store.dispatch('account/updateKoyStakedData', {
+                    account: props.account,
+                });
                 setTotalBalance();
                 await updateTokenBalances();
                 await updateResources({ account: props.account, force: true });
@@ -311,44 +309,6 @@ export default defineComponent({
 
             const total = totalRex > 0 ? tlosRexRatio * totalRexBalance : 0.0;
             return total;
-        };
-
-        const loadLiquidBalance = async () => {
-            try {
-                const paramsStakedBal = {
-                    code: 'eosio.token',
-                    scope: props.account as unknown as TableIndexType,
-                    table: 'accounts',
-                } as GetTableRowsParams;
-
-                const stakedBalRow = ((await api.getTableRows(paramsStakedBal)) as AccountsRows)
-                    .rows[0];
-
-                liquidValue.value = Number(stakedBalRow.balance?.split(' ')[0]);
-            } catch (e) {
-                liquidValue.value = 0;
-            }
-        };
-
-        const loadStakedBalance = async () => {
-            try {
-                const paramsStakedBal = {
-                    code: 'launch.stake',
-                    scope: 'launch.stake',
-                    table: 'stakes',
-                    lower_bound: props.account as unknown as TableIndexType,
-                    upper_bound: props.account as unknown as TableIndexType,
-                } as GetTableRowsParams;
-
-                const stakedBalRow = ((await api.getTableRows(paramsStakedBal)) as StakedbalRows)
-                    .rows[0];
-
-                stakedBal.value = Number(stakedBalRow.balance.split(' ')[0]);
-                unstakedBal.value = Number(stakedBalRow.unstaked_balance.split(' ')[0]);
-            } catch (e) {
-                stakedBal.value = 0;
-                unstakedBal.value = 0;
-            }
         };
 
         const fixDec = (val: number): number => parseFloat(val.toFixed(3));

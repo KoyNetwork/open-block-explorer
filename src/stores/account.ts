@@ -34,6 +34,9 @@ export interface AccountStateInterface {
     tlosRexRatio: number;
     rexfund: number;
     chainId: string;
+    stakedBal: number;
+    unstakedNal: number;
+    liquidValue: number;
 }
 
 const chain = getChain();
@@ -91,6 +94,9 @@ export const useAccountStore = defineStore('account', {
         tlosRexRatio: 1,
         rexfund: 0,
         chainId: '',
+        stakedBal: 0,
+        unstakedNal: 0,
+        liquidValue: 0,
     }),
     getters: {
         account(): AccountStateInterface {
@@ -826,6 +832,111 @@ export const useAccountStore = defineStore('account', {
             } catch (e) {
                 this.setTransactionError(e);
             }
+        },
+        async stakeKoy({ amount } : {amount: string}) {
+            let transaction = null;
+            const amountToStake = formatCurrency(amount, 4, symbol, true);
+
+            const actions = [
+                {
+                    account: 'launch.stake',
+                    name: 'stake',
+                    authorization: [
+                        {
+                            actor: this.accountName,
+                            permission: this.accountPermission,
+                        },
+                    ],
+                    data: {
+                        account: this.accountName,
+                        asset_amount: amountToStake,
+                    },
+                },
+            ];
+            try {
+                transaction = await this.user.signTransaction(
+                    {
+                        actions,
+                    },
+                    {
+                        blocksBehind: 3,
+                        expireSeconds: 180,
+                    },
+                );
+                this.setTransaction(transaction.transactionId);
+                void this.loadAccountData();
+                void this.updateKoyStakedData({ account: this.accountName });
+            } catch (e) {
+                this.setTransactionError(e);
+            }
+        },
+        async unstakeKoy({ amount } : { amount: string}) {
+            let transaction = null;
+            const amountToUnstake = formatCurrency(amount, 4, symbol, true);
+
+            const actions = [
+                {
+                    account: 'launch.stake',
+                    name: 'unstake',
+                    authorization: [
+                        {
+                            actor: this.accountName,
+                            permission: this.accountPermission,
+                        },
+                    ],
+                    data: {
+                        account: this.accountName,
+                        asset_amount: amountToUnstake,
+                    },
+                },
+            ];
+            try {
+                transaction = await this.user.signTransaction(
+                    {
+                        actions,
+                    },
+                    {
+                        blocksBehind: 3,
+                        expireSeconds: 180,
+                    },
+                );
+                void this.setTransaction(transaction.transactionId);
+                void this.loadAccountData();
+                void this.updateKoyStakedData({ account: this.accountName });
+            } catch (e) {
+                this.setTransactionError(e);
+            }
+        },
+        async updateKoyStakedData({ account }: {account: string}) {
+            const paramsLiquidBal = {
+                code: 'eosio.token',
+                scope: account,
+                table: 'accounts',
+            } as GetTableRowsParams;
+            const paramsStakedBal = {
+                code: 'launch.stake',
+                scope: 'launch.stake',
+                table: 'stakes',
+                lower_bound: Name.from(account),
+                upper_bound: Name.from(account),
+            } as GetTableRowsParams;
+
+            const liquidBalRow = ((await api.getTableRows(paramsLiquidBal)) as AccountsRows).rows[0];
+            const stakedBalRow = ((await api.getTableRows(paramsStakedBal)) as StakedbalRows).rows[0];
+
+            const liquidValue = Number(liquidBalRow.balance?.split(' ')[0]);
+            const stakedBal = Number(stakedBalRow.balance.split(' ')[0]);
+            const unstakedBal = Number(stakedBalRow.unstaked_balance.split(' ')[0]);
+
+            void this.setKoyWalletValue({ liquidValue, stakedBal, unstakedBal });
+        },
+        setKoyWalletValue(
+            { stakedBal, unstakedBal, liquidValue }: {stakedBal: number, unstakedBal: number, liquidValue: number},
+        ) {
+            // should we store string like 0.0000 KOYN or the value by itself?
+            this.stakedBal = stakedBal;
+            this.unstakedNal = unstakedBal;
+            this.liquidValue = liquidValue;
         },
     },
 });

@@ -3,11 +3,9 @@ import { defineComponent, ref, computed, onMounted } from 'vue';
 import ViewTransaction from 'src/components/ViewTransanction.vue';
 import { getChain } from 'src/config/ConfigManager';
 import { API } from '@greymass/eosio';
-import { api } from 'src/api';
 import { assetToAmount } from 'src/utils/string-utils';
 import { useAccountStore } from 'src/stores/account';
 import { useChainStore } from 'src/stores/chain';
-import { GetTableRowsParams, AccountsRows } from 'src/types';
 
 const chain = getChain();
 
@@ -30,7 +28,7 @@ export default defineComponent({
         const rexbal = computed(() => accountStore.rexbal);
         const maturedRex = computed(() => accountStore.maturedRex);
 
-        const liquidValue = ref<number>(0);
+        const liquidValue = computed((): number => accountStore.account.liquidValue);
         const liquidBalance = computed(
             () => accountData.value?.core_liquid_balance?.value ?? liquidValue.value,
         );
@@ -78,26 +76,9 @@ export default defineComponent({
             void formatDec();
         }
 
-        const loadLiquidBalance = async () => {
-            try {
-                const paramsStakedBal = {
-                    code: 'eosio.token',
-                    scope: accountName.value,
-                    table: 'accounts',
-                } as GetTableRowsParams;
-
-                const stakedBalRow = ((await api.getTableRows(paramsStakedBal)) as AccountsRows)
-                    .rows[0];
-
-                liquidValue.value = Number(stakedBalRow.balance?.split(' ')[0]);
-            } catch (e) {
-                liquidValue.value = 0;
-            }
-        };
-
         onMounted(async () => {
             if (!accountStore.account.data.core_liquid_balance) {
-                await loadLiquidBalance();
+                await accountStore.updateKoyStakedData({ account: accountName.value });
             }
         });
 

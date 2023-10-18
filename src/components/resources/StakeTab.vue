@@ -7,8 +7,6 @@ import { assetToAmount } from 'src/utils/string-utils';
 import { useAccountStore } from 'src/stores/account';
 import { useResourceStore } from 'src/stores/resources';
 import { useChainStore } from 'src/stores/chain';
-import { AccountsRows, GetTableRowsParams } from 'src/types';
-import { api } from 'src/api';
 
 const chain = getChain();
 const symbol = chain.getSystemToken().symbol;
@@ -24,9 +22,10 @@ export default defineComponent({
         const chainStore = useChainStore();
         const openTransaction = ref<boolean>(false);
         const stakingAccount = ref<string>(accountStore.accountName || '');
-        const liquidValue = ref<number>(0);
+        const liquidValue = computed((): number => accountStore.account.liquidValue);
         const accountTotal = computed((): string =>
             (accountStore.data.core_liquid_balance ?? liquidValue.value).toString());
+        const accountName = computed((): string => accountStore.account.accountName);
 
         const accountTotalAsNumber = computed(() => assetToAmount(accountTotal.value));
         const cpuTokens = ref<string>('0');
@@ -53,26 +52,9 @@ export default defineComponent({
             }
         }
 
-        const loadLiquidBalance = async () => {
-            try {
-                const paramsStakedBal = {
-                    code: 'eosio.token',
-                    scope: stakingAccount.value,
-                    table: 'accounts',
-                } as GetTableRowsParams;
-
-                const stakedBalRow = ((await api.getTableRows(paramsStakedBal)) as AccountsRows)
-                    .rows[0];
-
-                liquidValue.value = Number(stakedBalRow.balance?.split(' ')[0]);
-            } catch (e) {
-                liquidValue.value = 0;
-            }
-        };
-
         onMounted(async () => {
             if (!accountStore.data.core_liquid_balance) {
-                await loadLiquidBalance();
+                await accountStore.updateKoyStakedData({ account: accountName.value });
             }
         });
 
@@ -224,7 +206,7 @@ export default defineComponent({
 
 <style lang="sass">
 .button-accent
-    background: rgba(108, 35, 255, 1)
+    background: --var(primary)
     border-radius: 4px
     color: $grey-4
 </style>
