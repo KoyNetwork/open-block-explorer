@@ -20,7 +20,7 @@ import { Theme } from 'src/types/Theme';
 import { Token } from 'src/types';
 import { UiCustomization } from 'src/types/UiCustomization';
 const CHAIN_ID =
-  '2081223fcffc96ce2d22ab63df414d1d6bf2f64f2e2922d500808decacd8b8b';
+  '2081223fcffc96ce2d22ab63df414d1d6bf2f64f2e2922d500808decacd8b8b9';
 const NAME = 'koyn-testnet';
 const DISPLAY = 'Koyn';
 const TOKEN = {
@@ -31,16 +31,16 @@ const TOKEN = {
 } as Token;
 const HYPERION_ENDPOINT = 'https://hyptest.koy.network';
 const RPC_ENDPOINT = {
-    protocol: 'https',
-    host: 'testnet.koyn.goodblock.io',
-    port: 443,
+    protocol: 'http',
+    host: 'testnet.koy.network',
+    port: 9876,
 };
 const FUEL_RPC_ENDPOINT = {
-    protocol: 'https',
-    host: 'testnet.koyn.goodblock.io',
-    port: 443,
+    protocol: 'http',
+    host: 'testnet.koy.network',
+    port: 9876,
 };
-const API_ENDPOINT = 'https://testnet.koyn.goodblock.io/v1';
+const API_ENDPOINT = 'https://testnet.koy.network/v1';
 const S3_PRODUCER_BUCKET = '';
 const DISPLAY_MAP = false;
 const THEME = {
