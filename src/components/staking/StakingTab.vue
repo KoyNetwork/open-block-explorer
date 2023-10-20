@@ -35,7 +35,7 @@ export default defineComponent({
 
         const inputRules = computed((): Array<(data: string) => boolean | string> => [
             (val: string) => +val >= 0 || 'Value must not be negative',
-            (val: string) => +val <= assetToAmount((accountData.value.core_liquid_balance ?? 0).toString()) || 'Balance too low',
+            (val: string) => +val <= liquidBalance.value || 'Balance too low',
         ]);
 
         function formatDec() {
@@ -55,8 +55,7 @@ export default defineComponent({
             void accountStore.resetTransaction();
             if (
                 stakeTokens.value === '0' ||
-                Number(stakeTokens.value) >=
-                Number(accountData.value.core_liquid_balance.toString())
+                Number(stakeTokens.value) >= liquidBalance.value
             ) {
                 return;
             }
@@ -70,9 +69,7 @@ export default defineComponent({
         }
 
         function setMaxValue() {
-            stakeTokens.value = (
-                assetToAmount(accountData.value.core_liquid_balance.toString())
-            ).toString();
+            stakeTokens.value = liquidBalance.value.toString();
             void formatDec();
         }
 

@@ -5,6 +5,8 @@ import { API } from '@greymass/eosio';
 import { Token } from 'src/types';
 import { useChainStore } from 'src/stores/chain';
 import { useAccountStore } from 'src/stores/account';
+import { formatCurrency } from 'src/utils/string-utils';
+import ConfigManager from 'src/config/ConfigManager';
 
 const chain = getChain();
 
@@ -13,7 +15,7 @@ export default defineComponent({
     setup() {
         const chainStore = useChainStore();
         const accountStore = useAccountStore();
-        const symbol = ref<string>(chain.getSystemToken().symbol);
+        const symbol = computed(() => ConfigManager.get().getCurrentChain().getSystemToken().symbol);
         const stakingAccount = ref<string>('');
         const total = ref<string>('0');
         const token = computed((): Token => chainStore.token);
@@ -26,6 +28,9 @@ export default defineComponent({
         const maturingRex = computed(() => accountStore.maturingRex);
         const maturedRex = computed(() => accountStore.maturedRex);
         const rexSavings = computed(() => accountStore.savingsRex);
+        const precision = computed(() => ConfigManager.get().getCurrentChain().getSystemToken().precision);
+        const stakedValue = computed(() => formatCurrency(accountStore.account.stakedBal, precision.value, symbol.value));
+
 
         onMounted(async () => {
             if (!accountStore.data.core_liquid_balance) {
@@ -45,6 +50,7 @@ export default defineComponent({
             coreRexBalance,
             maturedRex,
             rexSavings,
+            stakedValue,
         };
     },
 });
@@ -65,21 +71,21 @@ export default defineComponent({
             <div class="col-xs-12 col-sm-6 q-px-lg">
                 <div class="row">
                     <div class="col-7">{{ `TOTAL ${symbol} STAKED` }}</div>
-                    <div class="col-5 text-right text-weight-bold">{{coreRexBalance}}</div>
+                    <div class="col-5 text-right text-weight-bold">{{stakedValue}}</div>
                 </div>
                 <div class="row q-pt-sm">
                     <div class="col-7">SAVINGS</div>
-                    <div class="col-5 text-right text-weight-bold">{{rexSavings}}</div>
+                    <div class="col-5 text-right text-weight-bold">??</div>
                 </div>
             </div>
             <div class="col-xs-12 col-sm-6 q-px-lg">
                 <div class="row">
                     <div class="col-7">MATURED</div>
-                    <div class="col-5 text-right text-weight-bold">{{maturedRex}}</div>
+                    <div class="col-5 text-right text-weight-bold">??</div>
                 </div>
                 <div class="row q-pt-sm">
                     <div class="col-7">MATURING</div>
-                    <div class="col-5 text-right text-weight-bold">{{maturingRex}}</div>
+                    <div class="col-5 text-right text-weight-bold">??</div>
                 </div>
             </div>
         </div>
