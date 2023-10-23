@@ -35,11 +35,6 @@ const RPC_ENDPOINT = {
     host: 'testnet.koy.network',
     port: 9876,
 };
-const FUEL_RPC_ENDPOINT = {
-    protocol: 'http',
-    host: 'testnet.koy.network',
-    port: 9876,
-};
 const API_ENDPOINT = 'https://testnet.koy.network/v1';
 const S3_PRODUCER_BUCKET = '';
 const DISPLAY_MAP = false;
@@ -87,7 +82,7 @@ export default class KoynTestnet extends BaseChain {
         return RPC_ENDPOINT;
     }
     getFuelRPCEndpoint(): RpcEndpoint | null {
-        return FUEL_RPC_ENDPOINT;
+        return null;
     }
     getApiEndpoint(): string {
         return API_ENDPOINT;
