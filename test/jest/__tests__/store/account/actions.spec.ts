@@ -51,7 +51,7 @@ const transactionHeaders = {
     transaction_extensions: [] as never[],
 };
 
-jest.mock('@greymass/eosio', () => ({
+jest.mock('@wharfkit/antelope', () => ({
     Name: {
         from: (s: string) => ({ toString: () => s }),
     },

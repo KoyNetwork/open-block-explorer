@@ -1,4 +1,4 @@
-import { AnyTransaction } from '@greymass/eosio';
+import { AnyTransaction } from '@wharfkit/antelope';
 import { describe, expect, it, jest, beforeEach } from '@jest/globals';
 import { installQuasarPlugin } from '@quasar/quasar-app-extension-testing-unit-jest';
 import { FuelUserWrapper } from 'src/api/fuel';
@@ -47,8 +47,8 @@ jest.mock('quasar', () => ({
     },
 }));
 
-// mocking @greymass/eosio
-jest.mock('@greymass/eosio', () => ({
+// mocking @wharfkit/antelope
+jest.mock('@wharfkit/antelope', () => ({
     // mocking static functions from
     Transaction: {
         from: (a: { actions: unknown[] }) => ({ actions: a.actions }),

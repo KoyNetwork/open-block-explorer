@@ -1,4 +1,4 @@
-import { API } from '@greymass/eosio';
+import { API } from '@wharfkit/antelope';
 
 export interface ActionData {
   actions: Action[];

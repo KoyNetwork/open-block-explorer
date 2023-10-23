@@ -4,7 +4,7 @@ import { useStore } from 'src/store';
 import { Token } from 'src/types';
 import { mapActions } from 'vuex';
 import ViewTransaction from 'src/components/ViewTransanction.vue';
-import { API } from '@greymass/eosio';
+import { API } from '@wharfkit/antelope';
 import { formatCurrency } from 'src/utils/string-utils';
 import { getChain } from 'src/config/ConfigManager';
 

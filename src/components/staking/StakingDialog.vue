@@ -11,7 +11,7 @@ import HistoryTab from 'src/components/staking/HistoryTab.vue';
 import SavingsTab from 'src/components/staking/SavingsTab.vue';
 import { getChain } from 'src/config/ConfigManager';
 import { useStore } from 'src/store';
-import { API } from '@greymass/eosio';
+import { API } from '@wharfkit/antelope';
 import { formatCurrency } from 'src/utils/string-utils';
 
 const symbol = getChain().getSystemToken().symbol;

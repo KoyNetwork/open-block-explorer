@@ -7,7 +7,7 @@ import ViewTransaction from 'src/components/ViewTransanction.vue';
 import { GetTableRowsParams } from 'src/types';
 import WalletModal from 'src/components/WalletModal.vue';
 import { getChain } from 'src/config/ConfigManager';
-import { Name } from '@greymass/eosio';
+import { Name } from '@wharfkit/antelope';
 import { formatCurrency, assetToAmount } from 'src/utils/string-utils';
 
 const chain = getChain();

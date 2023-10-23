@@ -5,7 +5,7 @@ import { User } from 'universal-authenticator-library';
 import { markRaw } from 'vue';
 
 import { getChain } from 'src/config/ConfigManager';
-import { API } from '@greymass/eosio';
+import { API } from '@wharfkit/antelope';
 import { formatCurrency } from 'src/utils/string-utils';
 
 const symbol = getChain().getSystemToken().symbol;

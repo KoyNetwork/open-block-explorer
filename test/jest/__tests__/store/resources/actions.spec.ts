@@ -51,7 +51,7 @@ const transactionHeaders = {
     transaction_extensions: [] as never[],
 };
 
-jest.mock('@greymass/eosio', () => ({
+jest.mock('@wharfkit/antelope', () => ({
     // mocking static functions from
     Name: {
         from: (s: string) => ({ toString: () => s }),
@@ -99,7 +99,7 @@ import { actions } from 'src/store/resources/actions';
 import { StateInterface } from 'src/store';
 
 import { GetTableRowsParams } from 'src/types';
-import { API } from '@greymass/eosio';
+import { API } from '@wharfkit/antelope';
 
 describe('Store - Resources Actions', () => {
     let commit: jest.Mock;

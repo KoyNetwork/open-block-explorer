@@ -17,7 +17,7 @@ import {
     Signature,
     SignedTransaction,
     Transaction,
-} from '@greymass/eosio';
+} from '@wharfkit/antelope';
 import { getChain } from 'src/config/ConfigManager';
 import { Dialog } from 'quasar';
 import { formatCurrency } from "src/utils/string-utils";

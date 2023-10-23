@@ -3,7 +3,7 @@ import { defineComponent, ref, computed } from 'vue';
 import { useStore } from 'src/store';
 import ViewTransaction from 'src/components/ViewTransanction.vue';
 import { getChain } from 'src/config/ConfigManager';
-import { API } from '@greymass/eosio';
+import { API } from '@wharfkit/antelope';
 import { assetToAmount } from 'src/utils/string-utils';
 import { QInput } from 'quasar';
 

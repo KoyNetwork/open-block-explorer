@@ -1,4 +1,4 @@
-import { API } from '@greymass/eosio';
+import { API } from '@wharfkit/antelope';
 import { User } from 'universal-authenticator-library';
 import { GetterTree } from 'vuex';
 import { StateInterface } from 'src/store/index';
