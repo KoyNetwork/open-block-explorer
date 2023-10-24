@@ -220,7 +220,7 @@ export default defineComponent({
         };
 
         const setTotalBalance = () => {
-            totalTokens.value = liquidNative.value + rex.value + staked.value + delegatedToOthers.value + stakedBal.value + unstakedBal.value;
+            totalTokens.value = liquidNative.value + stakedBal.value;
             isLoading.value = false;
         };
 
