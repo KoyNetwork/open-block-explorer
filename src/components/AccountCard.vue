@@ -582,7 +582,6 @@ export default defineComponent({
                     <th class="text-left">BALANCE</th>
                 </tr>
                 <tbody class="table-body">
-                    <tr></tr>
                     <tr>
                         <td class="text-left total-label">TOTAL</td>
                         <td v-if="isLoading" class="text-right total-amount total-loading-spinner">
@@ -590,11 +589,10 @@ export default defineComponent({
                         </td>
                         <td v-else class="text-right total-amount">{{ formatAsset(totalTokens) }}</td>
                     </tr>
-                    <tr class="total-row">
+                    <tr v-show="!isLoading && totalValueString.length > 0" class="total-row">
                         <td class="text-left"></td>
-                        <td v-show="!isLoading" class="text-right total-value">{{ totalValueString }}</td>
+                        <td class="text-right total-value">{{ totalValueString }}</td>
                     </tr>
-                    <tr></tr>
                     <tr>
                         <td class="text-left">LIQUID</td>
                         <td class="text-right">{{ formatAsset(liquidNative) }}</td>
@@ -682,6 +680,7 @@ $medium:750px
   font-size: 36px
   max-width: 100%
   background: unset
+  margin-bottom: 16px
 
   .avatar-image
     height: 150px
@@ -689,13 +688,15 @@ $medium:750px
     object-fit: cover
     border-radius: 30%
 
+  .q-table th
+    font-size: 1rem
   .q-table tbody td
-    font-size: 12px
+    font-size: 1rem
     &.total-label, &.total-value
       color: white
-      font-size: 14px
+      font-size: 1.25rem
     &.total-amount
-      font-size: 20px
+      font-size: 1.25rem
 
   .q-table__card
     background: unset
@@ -708,10 +709,9 @@ $medium:750px
       border-bottom: none
 
   .q-table thead tr, .q-table tbody td
-    height: 36px
-
+    height: 42px
     &.total-row
-      height: 48px
+      height: 52px
 
 .resources-container
   padding: 0
@@ -755,7 +755,7 @@ $medium:750px
 
 .total-amount
   color: white
-  font-size: 20px
+  font-size: 1.25rem
   font-weight: normal
 
 .total-value
