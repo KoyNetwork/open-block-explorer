@@ -25,16 +25,15 @@ export const actions: ActionTree<ProfilesStateInterface, StateInterface> = {
                 translateY: -10,
                 mouth: ['cute', 'drip', 'faceMask', 'kissHeart', 'lilSmile', 'plain', 'shout', 'shy', 'smileLol', 'smileTeeth', 'tongueOut', 'wideSmile', 'pissed'],
             });
-            
+
             const botAvatar = () => createAvatar(bottts, {
                 seed: account,
                 radius: 30,
                 rotate: 9,
                 scale: 122,
-                size: 96,
                 backgroundColor: ['b6e304', 'd1d4f9', 'ffdfbf', 'ffd5dc', 'c0aede'],
                 backgroundType: ['gradientLinear', 'solid'],
-                backgroundRotation: [0,360],
+                backgroundRotation: [0, 360],
                 translateX: -5,
                 translateY: 5,
                 clip: true,
@@ -48,10 +47,10 @@ export const actions: ActionTree<ProfilesStateInterface, StateInterface> = {
                 sidesProbability: 83,
                 texture: ['grunge01', 'grunge02', 'circuits', 'dots', 'dirty02'],
                 textureProbability: 36,
-                top: ['antenna', 'antennaCrooked', 'bulb01', 'glowingBulb01', 'glowingBulb2', 'horns', 'lights', 'pyramid', 'radar'],
+                top: ['antenna', 'antennaCrooked', 'bulb01', 'glowingBulb01', 'glowingBulb02', 'horns', 'lights', 'pyramid', 'radar'],
                 topProbability: 69,
             });
-       
+
             const profile = {
                 account: account,
                 avatar: abi.abi ? botAvatar().toString() : avatar().toString(),
