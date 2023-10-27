@@ -153,6 +153,7 @@ export default class KoynTestnet extends BaseChain {
                 hideKeysTab: false,
                 hideChildrenTab: true,
                 hideContractsTab: false,
+                hideCreatedBy: true,
             },
         };
     }

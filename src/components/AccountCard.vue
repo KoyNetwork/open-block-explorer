@@ -493,22 +493,24 @@ export default defineComponent({
                                 @click="copy(account)"
                             />
                         </div>
-                        <div
-                            v-if="creatingAccount && creatingAccount !== '__self__'"
-                            class="text-subtitle"
-                        >
-                            created by
-                            <span>&nbsp;<a @click="loadCreatorAccount">{{ creatingAccount }}</a>&nbsp;</span>
-                            <div>
-                                <DateField :timestamp="createTime" showAge>&nbsp;</DateField>
-                                <q-tooltip>{{createTimeFormat}}</q-tooltip>
-                            </div><a class="q-ml-xs tx-link" @click="loadCreatorTransaction">
-                                <q-icon name="fas fa-link"/></a>
-                        </div>
-                        <div v-else class="text-subtitle">created<span>&nbsp;</span>
-                            <div>
-                                <DateField :timestamp="createTime" showAge>&nbsp;</DateField>
-                                <q-tooltip>{{createTimeFormat}}</q-tooltip>
+                        <div v-show="!accountPageSettings.hideCreatedBy">
+                            <div
+                                v-if="creatingAccount && creatingAccount !== '__self__'"
+                                class="text-subtitle"
+                            >
+                                created by
+                                <span>&nbsp;<a @click="loadCreatorAccount">{{ creatingAccount }}</a>&nbsp;</span>
+                                <div>
+                                    <DateField :timestamp="createTime" showAge>&nbsp;</DateField>
+                                    <q-tooltip>{{createTimeFormat}}</q-tooltip>
+                                </div><a class="q-ml-xs tx-link" @click="loadCreatorTransaction">
+                                    <q-icon name="fas fa-link"/></a>
+                            </div>
+                            <div v-else class="text-subtitle">created<span>&nbsp;</span>
+                                <div>
+                                    <DateField :timestamp="createTime" showAge>&nbsp;</DateField>
+                                    <q-tooltip>{{createTimeFormat}}</q-tooltip>
+                                </div>
                             </div>
                         </div>
                     </div>

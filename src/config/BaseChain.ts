@@ -66,6 +66,7 @@ export const baseUiConfiguration: UiCustomization = {
         hideKeysTab: false,
         hideChildrenTab: false,
         hideContractsTab: false,
+        hideCreatedBy: false,
     },
 };
 

@@ -153,6 +153,7 @@ export default class Koyn extends BaseChain {
                 hideKeysTab: false,
                 hideChildrenTab: true,
                 hideContractsTab: false,
+                hideCreatedBy: true,
             },
         };
     }
