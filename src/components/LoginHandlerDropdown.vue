@@ -64,7 +64,6 @@ export default defineComponent({
     <q-btn-dropdown
         class="connect-button"
         :label="account"
-        :rounded="true"
         :outline="true"
         icon="profile"
     >
@@ -113,6 +112,7 @@ export default defineComponent({
     transform: translateY(-50%)
     left: 4px
     z-index: 10
+    border-radius: 30%
     svg
         object-fit: cover
         height: 100%
