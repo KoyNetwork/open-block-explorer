@@ -79,7 +79,7 @@ export default defineComponent({
         const stakedResources = ref(0);
 
         const stakedBal = computed((): number => accountStore.stakedBal);
-        const unstakedBal = computed((): number => store.state.account.unstakedNal);
+        const unstakedBal = computed((): number => accountStore.account.unstakedBal);
 
         const accountExists = ref<boolean>(true);
         const openSendDialog = ref<boolean>(false);
@@ -100,7 +100,7 @@ export default defineComponent({
 
         const token = computed((): Token => chainStore.token);
 
-        const liquidValue = computed((): number => store.state.account.liquidValue);
+        const liquidValue = computed((): number => accountStore.account.liquidValue);
         const liquidNative = computed((): number => accountData.value?.core_liquid_balance?.value
             ? accountData.value.core_liquid_balance.value
             : liquidValue.value);
@@ -145,9 +145,7 @@ export default defineComponent({
                 await loadProfile();
                 await loadBalances();
                 loadResources();
-                await store.dispatch('account/updateKoyStakedData', {
-                    account: props.account,
-                });
+                void accountStore.updateKoyStakedData({ account: props.account });
                 setTotalBalance();
                 await updateTokenBalances();
                 await updateResources({ account: props.account, force: true });
@@ -548,7 +546,7 @@ export default defineComponent({
                         @click="openResourcesDialog = true"
                     />
                 </div>
-                <div v-if="isAccount && !accountPageSettings.hideRexControl" class="col-3">
+                <div v-if="isAccount" class="col-3">
                     <q-btn
                         :disable="tokensLoading || isLoading"
                         :label='tokensLoading ? "Loading..." : "Staking"'

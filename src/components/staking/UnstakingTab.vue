@@ -29,10 +29,11 @@ export default defineComponent({
             () => accountStore.TransactionError,
         );
         const accountData = computed(() => accountStore.data as API.v1.AccountObject);
-        const rexInfo = computed(() => accountStore.data.rex_info);
-        const rexbal = computed(() => accountStore.rexbal);
-        const maturedRex = computed(() => accountStore.maturedRex);
-        const maxUnlend = computed(() => assetToAmount(maturedRex.value) - .0001);
+        // const rexInfo = computed(() => accountStore.data.rex_info);
+        // const rexbal = computed(() => accountStore.rexbal);
+        // const maturedRex = computed(() => accountStore.maturedRex);
+        const availableToUnstake = computed((): number => accountStore.account.availableToUnstakeVal);
+        const maxUnlend = computed(() => availableToUnstake.value - .0001);
 
         function formatDec() {
             const precision = chainStore.token.precision;
@@ -77,10 +78,12 @@ export default defineComponent({
             unstake,
             assetToAmount,
             accountData,
-            rexInfo,
-            rexbal,
-            maturedRex,
+            // rexInfo,
+            // rexbal,
+            //maturedRex,
+            availableToUnstake,
             maxUnlend,
+            account: accountStore.account,
             symbol,
             setMaxValue,
         };
@@ -111,7 +114,7 @@ export default defineComponent({
                         standout="bg-deep-purple-2 text-white"
                         placeholder='0'
                         :lazy-rules='true'
-                        :rules="[ val => val >= 0  && val < assetToAmount(maturedRex)  || 'Invalid amount.' ]"
+                        :rules="[ val => val >= 0  && val < availableToUnstake || 'Invalid amount.' ]"
                         type="text"
                         dense
                         dark

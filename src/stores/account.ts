@@ -35,7 +35,12 @@ export interface AccountStateInterface {
     rexfund: number;
     chainId: string;
     stakedBal: number;
-    unstakedNal: number;
+    unstakedBal: number;
+    availableToUnstakeVal: number;
+    claimableAmountVal: number;
+    withdrawSpeedVal: number;
+    lastUnstakeTime: Date;
+    lastClaimTime: Date;
     liquidValue: number;
 }
 
@@ -95,7 +100,12 @@ export const useAccountStore = defineStore('account', {
         rexfund: 0,
         chainId: '',
         stakedBal: 0,
-        unstakedNal: 0,
+        unstakedBal: 0,
+        availableToUnstakeVal: 0,
+        claimableAmountVal: 0,
+        withdrawSpeedVal: 0,
+        lastUnstakeTime: new Date(0),
+        lastClaimTime: new Date(0),
         liquidValue: 0,
     }),
     getters: {
@@ -920,23 +930,79 @@ export const useAccountStore = defineStore('account', {
                 lower_bound: Name.from(account),
                 upper_bound: Name.from(account),
             } as GetTableRowsParams;
+            const paramsConfiga = {
+                code: 'launch.stake',
+                scope: 'launch.stake',
+                table: 'configa',
+                limit: 1,
+            } as GetTableRowsParams;
 
-            const liquidBalRow = ((await api.getTableRows(paramsLiquidBal)) as AccountsRows).rows[0];
-            const stakedBalRow = ((await api.getTableRows(paramsStakedBal)) as StakedbalRows).rows[0];
+            const liquidBalRow = ((await api.getTableRows(paramsLiquidBal)) as AccountsRows)
+                .rows[0];
+            const stakedBalRow = ((await api.getTableRows(paramsStakedBal)) as StakedbalRows)
+                .rows[0];
 
             const liquidValue = Number(liquidBalRow.balance?.split(' ')[0]);
-            const stakedBal = Number(stakedBalRow.balance.split(' ')[0]);
-            const unstakedBal = Number(stakedBalRow.unstaked_balance.split(' ')[0]);
+            const unstakedBal = Number(stakedBalRow?.unstaked_balance.split(' ')[0]) || 0;
+            const stakedBal = Number(stakedBalRow?.balance.split(' ')[0]) - unstakedBal || 0;
+            const lastUnstakeTime = stakedBalRow ? new Date(stakedBalRow?.last_unstake_time) : new Date();
 
-            void this.setKoyWalletValue({ liquidValue, stakedBal, unstakedBal });
+            // Available to Unstake values
+            const unstakingPeriodSeconds = stakedBalRow?.staker_group === 1 ? 4 * 365 * 24 * 60 * 60 : 6 * 30 * 24 * 60 * 60;
+            const withdrawSpeedVal = stakedBal / unstakingPeriodSeconds;
+
+            const timeSinceLastUnstake = Math.floor(new Date().getTime() / 1000) - (lastUnstakeTime?.getTime() / 1000);
+            const availableToUnstakeVal = Math.max(timeSinceLastUnstake * withdrawSpeedVal, 0);
+
+            // Claim Rewards calculation
+            const configaTableResult = ((await api.getTableRows(paramsConfiga)) as ConfigaRows);
+            const dailyYieldPercentage = configaTableResult.rows[0].daily_yield_percentage;
+
+            const lastClaimTime = stakedBalRow ? new Date(stakedBalRow?.last_claim_date) : new Date();
+            const timeSinceLastClaim = Math.floor(new Date().getTime() / 1000) - (lastClaimTime?.getTime() / 1000);
+            const dailyYield = (stakedBal * (dailyYieldPercentage / 1_000_000)) / 100;
+            const claimableAmountVal = (dailyYield / (24*60*60)) * timeSinceLastClaim;
+
+            void this.setKoyWalletValue({
+                liquidValue,
+                stakedBal,
+                unstakedBal,
+                lastUnstakeTime,
+                lastClaimTime,
+                availableToUnstakeVal,
+                claimableAmountVal,
+                withdrawSpeedVal: withdrawSpeedVal,
+            });
         },
-        setKoyWalletValue(
-            { stakedBal, unstakedBal, liquidValue }: {stakedBal: number, unstakedBal: number, liquidValue: number},
+        setKoyWalletValue({
+            stakedBal,
+            liquidValue,
+            unstakedBal,
+            lastUnstakeTime,
+            lastClaimTime,
+            availableToUnstakeVal,
+            claimableAmountVal,
+            withdrawSpeedVal,
+        }: {
+            stakedBal: number,
+            liquidValue: number,
+            unstakedBal: number,
+            lastUnstakeTime: Date,
+            lastClaimTime: Date,
+            availableToUnstakeVal: number,
+            claimableAmountVal: number,
+            withdrawSpeedVal: number,
+        },
         ) {
             // should we store string like 0.0000 KOYN or the value by itself?
             this.stakedBal = stakedBal;
-            this.unstakedNal = unstakedBal;
+            this.unstakedBal = unstakedBal;
             this.liquidValue = liquidValue;
+            this.lastUnstakeTime = lastUnstakeTime;
+            this.lastClaimTime = lastClaimTime;
+            this.availableToUnstakeVal = availableToUnstakeVal;
+            this.claimableAmountVal = claimableAmountVal
+            this.withdrawSpeedVal = withdrawSpeedVal
         },
     },
 });
