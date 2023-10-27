@@ -3,7 +3,7 @@ import { defineComponent, ref, computed } from 'vue';
 import ViewTransaction from 'src/components/ViewTransanction.vue';
 import { getChain } from 'src/config/ConfigManager';
 import { API } from '@greymass/eosio';
-import { assetToAmount } from 'src/utils/string-utils';
+import { assetToAmount, formatCurrency } from 'src/utils/string-utils';
 import { QInput } from 'quasar';
 import { useAccountStore } from 'src/stores/account';
 import { useChainStore } from 'src/stores/chain';
@@ -86,6 +86,7 @@ export default defineComponent({
             account: accountStore.account,
             symbol,
             setMaxValue,
+            formatCurrency,
         };
     },
 });
@@ -99,10 +100,10 @@ export default defineComponent({
             <div class="col-12">
                 <div class="row">
                     <div class="row q-pb-sm full-width">
-                        <div class="col-8">{{ `MATURED ${symbol}` }}</div>
+                        <div class="col-8">AVAILABLE TO UNSTAKE</div>
                         <div class="col-4">
                             <div class="row items-center justify-end q-hoverable cursor-pointer" @click="setMaxValue">
-                                <div class="text-weight-bold text-right balance-amount">{{ maxUnlend }} {{ symbol }}</div>
+                                <div class="text-weight-bold text-right balance-amount">{{ formatCurrency(maxUnlend, 4, symbol) }}</div>
                                 <q-icon class="q-ml-xs" name="info"/>
                                 <q-tooltip>Click to fill full amount</q-tooltip>
                             </div>

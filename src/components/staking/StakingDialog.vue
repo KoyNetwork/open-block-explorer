@@ -21,7 +21,7 @@ export default defineComponent({
     components: {
         StakingInfo,
         // StakeFromResources,
-        ProcessingTab,
+        // ProcessingTab,
         StakingTab,
         UnstakingTab,
         HistoryTab,
@@ -131,8 +131,8 @@ export default defineComponent({
     },
     async mounted() {
         try {
-            const apyValue = await this.$api.getApy();
-            this.apy = `${apyValue}%`;
+            // const apyValue = await this.$api.getApy();
+            // this.apy = `${apyValue}%`;
         } catch (e) {
             console.error(e);
         }
@@ -159,7 +159,7 @@ export default defineComponent({
             <div class="col-xs-12 col-sm-10 col-md-7 col-lg-7 max-dialog-width">
                 <div class="row q-pl-sm">
                     <div class="text-h4 q-pb-md inline-block color-grey-3 inline">Staking</div>
-                    <div class="text-h5 q-pb-md inline-block color-grey-3 inline float-right">APY: ??</div>
+                    <!-- <div class="text-h5 q-pb-md inline-block color-grey-3 inline float-right">APY: ??</div> -->
                 </div>
                 <div class="q-pa-sm">
                     <StakingInfo/>
@@ -192,7 +192,7 @@ export default defineComponent({
                             <q-tab name="unstake" label="Unstake"/>
                             <!-- <q-tab name="stakecpunet" label="Stake from CPU/NET"/> -->
                             <!-- <q-tab name="savings" label="Savings"/> -->
-                            <q-tab name="maturing" label="Maturing"/>
+                            <!-- <q-tab name="maturing" label="Maturing"/> -->
                             <q-tab name="history" label="History"/>
                         </q-tabs>
                         <q-separator color="grey-8"/>
@@ -209,9 +209,9 @@ export default defineComponent({
                             <!-- <q-tab-panel name="savings">
                                 <SavingsTab/>
                             </q-tab-panel> -->
-                            <q-tab-panel name="maturing">
+                            <!-- <q-tab-panel name="maturing">
                                 <ProcessingTab/>
-                            </q-tab-panel>
+                            </q-tab-panel> -->
                             <q-tab-panel name="history">
                                 <HistoryTab/>
                             </q-tab-panel>

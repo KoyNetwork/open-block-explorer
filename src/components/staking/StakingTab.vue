@@ -135,6 +135,7 @@ export default defineComponent({
                         class="full-width button-accent"
                         :label='"Stake " + symbol'
                         flat
+                        disable
                         @click="stake"
                     />
                 </div>

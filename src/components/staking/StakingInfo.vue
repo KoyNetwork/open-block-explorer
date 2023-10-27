@@ -32,6 +32,10 @@ export default defineComponent({
         const stakedValue = computed(() => formatCurrency(accountStore.account.stakedBal, precision.value, symbol.value));
 
 
+        const withdrawSpeed = computed(() => store.state?.account.withdrawSpeedVal);
+        const lastUnstake = computed(() => store.state?.account.lastUnstakeTime);
+        const availableToUnstake = computed(() => formatCurrency(store.state?.account.availableToUnstakeVal, 4, symbol.value));
+
         onMounted(async () => {
             if (!accountStore.data.core_liquid_balance) {
                 await accountStore.updateKoyStakedData({ account: accountName.value });
@@ -51,6 +55,9 @@ export default defineComponent({
             maturedRex,
             rexSavings,
             stakedValue,
+            withdrawSpeed,
+            lastUnstake,
+            availableToUnstake,
         };
     },
 });
@@ -74,18 +81,18 @@ export default defineComponent({
                     <div class="col-5 text-right text-weight-bold">{{stakedValue}}</div>
                 </div>
                 <div class="row q-pt-sm">
-                    <div class="col-7">SAVINGS</div>
-                    <div class="col-5 text-right text-weight-bold">??</div>
+                    <div class="col-7">WITHDRAW SPEED</div>
+                    <div class="col-5 text-right text-weight-bold">{{ withdrawSpeed }}</div>
                 </div>
             </div>
             <div class="col-xs-12 col-sm-6 q-px-lg">
                 <div class="row">
-                    <div class="col-7">MATURED</div>
-                    <div class="col-5 text-right text-weight-bold">??</div>
+                    <div class="col-7">AVAILABLE TO UNSTAKE</div>
+                    <div class="col-5 text-right text-weight-bold">{{ availableToUnstake }}</div>
                 </div>
                 <div class="row q-pt-sm">
-                    <div class="col-7">MATURING</div>
-                    <div class="col-5 text-right text-weight-bold">??</div>
+                    <div class="col-7">LAST UNSTAKE</div>
+                    <div class="col-5 text-right text-weight-bold">{{ lastUnstake.toDateString() }}</div>
                 </div>
             </div>
         </div>
