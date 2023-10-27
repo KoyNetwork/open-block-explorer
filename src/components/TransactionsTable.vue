@@ -747,7 +747,7 @@ export default defineComponent({
             <q-table
                 ref="main_table"
                 v-model:pagination="paginationSettings"
-                class="q-mt-lg row trx-table--fixed-layout"
+                class="q-mt-lg row trx-table trx-table--fixed-layout"
                 flat
                 table-header-class="table-header"
                 hide-pagination
@@ -897,6 +897,10 @@ export default defineComponent({
 <style lang="sass">
 $medium:920px
 
+.q-table tbody tr td,
+.trx-table
+    font-size: 1rem
+
 .trx-table--title
   font-size: 22.75px
   font-style: normal
@@ -917,11 +921,11 @@ $medium:920px
     tbody td:first-child
       word-break: break-all
     th:nth-child(1)
-      width: 15%
+      width: 10%
     th:nth-child(2)
       width: 17%
     th:nth-child(3)
-      width: 27%
+      width: 32%
     th:nth-child(4)
       width: 41%
 

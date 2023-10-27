@@ -79,6 +79,8 @@ export default defineComponent({
   &.action-transfer{
     background: rgba(196, 196, 196, 0.3);
     font-weight: bold;
+    padding: 0 4px;
+    border-radius: 4px;
   }
 
   &.action-general{
