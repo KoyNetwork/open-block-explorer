@@ -70,6 +70,7 @@ const THEME = {
     'color-header-support-background': 'linear-gradient(180deg, #006600 0%, #2eb840 100%)',
     'color-graph-shadow': '#CE1C6128',
     'color-footer-background': '#82103C',
+    'color-footer-text': '#90B862',
     'color-dropdown-card': '#115820',
 };
 export default class KoynTestnet extends BaseChain {
@@ -153,6 +154,7 @@ export default class KoynTestnet extends BaseChain {
                 hideKeysTab: false,
                 hideChildrenTab: true,
                 hideContractsTab: false,
+                hideCreatedBy: true,
             },
         };
     }

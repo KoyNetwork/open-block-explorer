@@ -116,11 +116,11 @@ export default defineComponent({
             <span class="text-bold">
                 <AccountFormat :account="transferData.from" type="account"/>
             </span>
-            <span class="q-ma-0"> &nbsp; → &nbsp; </span>
+            <span class="q-ma-none"> &nbsp; → &nbsp; </span>
             <span class="text-bold">
                 <AccountFormat :account="transferData.to" type="account">&nbsp;</AccountFormat>
             </span>
-            <span class="text-bold">{{ ' ' + transferData.quantity }}</span>
+            <span class="text-bold q-mt-none">{{ ' ' + transferData.quantity }}</span>
         </div>
         <div class="row ">
             <div class="text-weight-bold">

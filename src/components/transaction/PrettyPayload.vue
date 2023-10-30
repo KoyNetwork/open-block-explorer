@@ -28,6 +28,9 @@ export default defineComponent({
                 'owner',
                 'account_name',
                 'voter',
+                'payer_account',
+                'receiver_account',
+                'producer',
             ];
             return accountRegEx.includes(data);
         }

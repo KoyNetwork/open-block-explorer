@@ -28,6 +28,7 @@ export interface AccountPageSettings {
     hideKeysTab: boolean;
     hideChildrenTab: boolean;
     hideContractsTab: boolean;
+    hideCreatedBy: boolean;
 }
 
 export interface UiCustomization {
