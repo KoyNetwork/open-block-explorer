@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, ref, computed, onMounted } from 'vue';
+import { computed, defineComponent, ref } from 'vue';
 import WalletModal from 'src/components/WalletModal.vue';
 import { useStore } from 'src/store';
 import { getAuthenticators } from 'src/boot/ual';
@@ -18,10 +18,9 @@ export default defineComponent({
 
         const getAuthenticator = (): Authenticator => {
             const wallet = localStorage.getItem('autoLogin_' + getChain().getChainId());
-            const authenticator = authenticators.find(
+            return authenticators.find(
                 auth => auth.getName() === wallet,
             );
-            return authenticator;
         };
 
         const onLogout = async (): Promise<void> => {
@@ -36,7 +35,7 @@ export default defineComponent({
         };
 
         const clearAccount = (): void => {
-            void store.dispatch('account/logout');
+            void accountStore.logout();
         };
 
         onMounted(async () => {

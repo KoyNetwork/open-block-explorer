@@ -1,4 +1,4 @@
-import { AccountStateInterface } from 'src/store/account/state';
+import { AccountStateInterface } from 'src/stores/account/state';
 import { FuelUserWrapper } from 'src/api/fuel';
 
 global.fetch = jest.fn((input: RequestInfo | URL) =>
@@ -71,8 +71,9 @@ jest.mock('@greymass/eosio', () => ({
     })),
 }));
 
-import { actions } from 'src/store/account/actions';
 import { User } from 'universal-authenticator-library';
+import { createPinia, setActivePinia } from 'pinia';
+import { useAccountStore } from 'src/stores/account';
 
 describe('Store - Account Actions', () => {
     let commit: jest.Mock;
@@ -89,6 +90,19 @@ describe('Store - Account Actions', () => {
 
 
     beforeEach(() => {
+        state = {
+            isAuthenticated: false,
+            user: null,
+            accountName: '',
+            accountPermission: '',
+        } as AccountStateInterface;
+
+        setActivePinia(createPinia({
+            initialState: {
+                account: state,
+            },
+        }));
+
         users = [{
             name: 'John Doe',
             getAccountName: jest.fn().mockResolvedValue('john.doe'),
@@ -97,22 +111,18 @@ describe('Store - Account Actions', () => {
         commit = jest.fn();
         authenticator = newAuthenticatorMock();
 
-        state = {
-            isAuthenticated: false,
-            user: null,
-            accountName: '',
-            accountPermission: '',
-        } as AccountStateInterface;
+
 
     });
 
     describe('login()', () => {
         test('when not account provided it should should request account', async () => {
+            const accountStore = useAccountStore();
+
             authenticator = newAuthenticatorMock(true);
 
             // call the action login
-            await (actions as { login: (a:unknown, b:unknown) => Promise<void> }).login(
-                { commit, state },
+            await accountStore.login(
                 { account: null, authenticator },
             );
 
