@@ -251,6 +251,7 @@ export const getActions = async function (
 export const getInfo = async function (): Promise<ChainInfo> {
     controller.abort();
     const response = await hyperion.get('v1/chain/get_info');
+    console.log(`--------------------- ${chain.getHyperionEndpoint()}/v1/chain/get_info`, response);
     return response.data as ChainInfo;
 };
 
