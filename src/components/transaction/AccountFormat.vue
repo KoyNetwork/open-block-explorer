@@ -25,6 +25,7 @@ export default defineComponent({
         const hover = ref(false);
 
         onMounted(async () => {
+            console.info('------ AccountFormat:store', store);
             if (props.type !== 'transaction' && !profile.value) {
                 await store.dispatch('profiles/fetchProfileByAccount', accAccount.value);
             }

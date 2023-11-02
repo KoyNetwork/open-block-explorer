@@ -13,6 +13,7 @@ export const actions: ActionTree<ProfilesStateInterface, StateInterface> = {
         //TODO: fetch data from API
         try {
             const abi = await api.getABI(account);
+            console.info('------ fetchprofileByAccount:getABI ', abi);
 
             const avatar = () => createAvatar(funEmoji, {
                 seed: account,
@@ -53,7 +54,7 @@ export const actions: ActionTree<ProfilesStateInterface, StateInterface> = {
 
             const profile = {
                 account: account,
-                avatar: abi.abi ? botAvatar().toString() : avatar().toString(),
+                avatar: abi?.abi ? botAvatar().toString() : avatar().toString(),
             } as Profile;
 
             commit('setProfile', profile);
