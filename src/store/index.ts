@@ -64,9 +64,11 @@ export default store(function () {
         // for dev mode and --debug builds only
         strict: !!process.env.DEBUGGING,
     });
+    console.info('---- store:store', Store);
     return Store;
 });
 
 export function useStore() {
+    console.info('---- store:useStore', vuexUseStore(storeKey));
     return vuexUseStore(storeKey);
 }
