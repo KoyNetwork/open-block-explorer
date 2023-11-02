@@ -28,3 +28,4 @@ jobs:
           rm -rf dist/spa/*
           yarn install --ignore-engines
           yarn build
+          node -v
