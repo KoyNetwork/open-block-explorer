@@ -78,8 +78,12 @@ export default defineComponent({
         const radius = ref(44);
         const stakedResources = ref(0);
 
-        const stakedBal = computed((): number => accountStore.stakedBal);
+        const stakedBal = computed((): number => accountStore.account.stakedBal);
         const unstakedBal = computed((): number => accountStore.account.unstakedBal);
+        const availableToUnstake = computed((): number => accountStore.account.availableToUnstakeVal);
+        const availableToClaim = computed((): number => accountStore.account.claimableAmountVal);
+        const lastClaim = computed((): Date => accountStore.account.lastClaimTime);
+        const lastUnstake = computed((): Date =>  accountStore.account.lastUnstakeTime);
 
         const accountExists = ref<boolean>(true);
         const openSendDialog = ref<boolean>(false);
@@ -374,6 +378,10 @@ export default defineComponent({
             rexDeposits.value = 0;
         };
 
+        const claimRewards = () => {
+            void accountStore.claimRewards();
+        };
+
         onMounted(async () => {
             usdPrice.value = await chain.getUsdPrice();
             await loadAccountData();
@@ -409,6 +417,10 @@ export default defineComponent({
             ram_max,
             stakedBal,
             unstakedBal,
+            availableToClaim,
+            availableToUnstake,
+            lastUnstake,
+            lastClaim,
             creatingAccount,
             isLoading,
             tokensLoading,
@@ -445,6 +457,7 @@ export default defineComponent({
             copy,
             formatAsset,
             updateTokenBalances,
+            claimRewards,
             profile,
         };
     },
@@ -555,6 +568,15 @@ export default defineComponent({
                         @click="openStakingDialog = true"
                     />
                 </div>
+                <div>
+                    <q-btn
+                        :disable="tokensLoading || isLoading"
+                        :label='tokensLoading ? "Loading..." : "Claim"'
+                        class="ellipsis full-width"
+                        color="primary"
+                        @click="claimRewards"
+                    />
+                </div>
             </div>
         </q-card-section>
         <q-markup-table>
@@ -613,6 +635,22 @@ export default defineComponent({
                     <tr>
                         <td class="text-left">UNSTAKED</td>
                         <td class="text-right">{{ formatAsset(unstakedBal) }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-left">AVAILABLE TO CLAIM</td>
+                        <td class="text-right">{{ formatAsset(availableToClaim) }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-left">LAST CLAIM</td>
+                        <td class="text-right">{{ lastClaim.toDateString() }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-left">AVAILABLE TO UNSTAKE</td>
+                        <td class="text-right">{{ formatAsset(availableToUnstake) }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-left">LAST UNSTAKE</td>
+                        <td class="text-right">{{ lastUnstake.toDateString() }}</td>
                     </tr>
                 </tbody>
             </thead>

@@ -39,6 +39,14 @@ export interface StakedbalRows {
   rows: Stakedbal[];
 }
 
+export interface ConfigaRow {
+  daily_yield_percentage: number;
+}
+
+export interface ConfigaRows {
+  rows: ConfigaRow[];
+}
+
 export interface GenericTable {
   rows: unknown[];
 }

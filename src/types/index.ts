@@ -40,6 +40,7 @@ export {
     RexPoolRows,
     RexPool,
     AccountsRows,
+    StakedbalRows,
 } from 'src/types/TableRows';
 export { BP } from 'src/types/BP';
 export { ChainInfo } from 'src/types/ChainInfo';

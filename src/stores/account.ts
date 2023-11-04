@@ -8,6 +8,7 @@ import { formatCurrency } from 'src/utils/string-utils';
 import { FuelUserWrapper } from 'src/api/fuel';
 import { api } from 'src/api';
 import { SignTransactionResponse } from 'universal-authenticator-library/dist/interfaces';
+import { AccountsRows, StakedbalRows } from 'src/types';
 
 
 export interface AccountStateInterface {
@@ -1001,8 +1002,43 @@ export const useAccountStore = defineStore('account', {
             this.lastUnstakeTime = lastUnstakeTime;
             this.lastClaimTime = lastClaimTime;
             this.availableToUnstakeVal = availableToUnstakeVal;
-            this.claimableAmountVal = claimableAmountVal
-            this.withdrawSpeedVal = withdrawSpeedVal
+            this.claimableAmountVal = claimableAmountVal;
+            this.withdrawSpeedVal = withdrawSpeedVal;
+        },
+        async claimRewards () {
+            let transaction = null;
+
+            const actions = [
+                {
+                    account: 'launch.stake',
+                    name: 'claimrewards',
+                    authorization: [
+                        {
+                            actor: this.accountName,
+                            permission: this.accountPermission,
+                        },
+                    ],
+                    data: {
+                        account: this.accountName,
+                    },
+                },
+            ];
+            try {
+                transaction = await this.user.signTransaction(
+                    {
+                        actions,
+                    },
+                    {
+                        blocksBehind: 3,
+                        expireSeconds: 180,
+                    },
+                );
+                void this.setTransaction(transaction.transactionId);
+                void this.loadAccountData();
+                void this.updateKoyStakedData({ account: this.accountName });
+            } catch (e) {
+                void this.setTransactionError(e);
+            }
         },
     },
 });
