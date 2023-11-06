@@ -3,8 +3,8 @@ import { StateInterface } from 'src/store/index';
 import { Profile } from 'src/types/Profile';
 import { ProfilesStateInterface } from 'src/store/profiles/state';
 import { createAvatar } from '@dicebear/core';
-import { funEmoji } from '@dicebear/collection';
-import { bottts } from '@dicebear/collection';
+import * as funEmoji from '@dicebear/fun-emoji';
+import * as bottts from '@dicebear/bottts';
 import { api } from 'src/api/index';
 
 
@@ -13,7 +13,6 @@ export const actions: ActionTree<ProfilesStateInterface, StateInterface> = {
         //TODO: fetch data from API
         try {
             const abi = await api.getABI(account);
-            console.info('------ fetchprofileByAccount:getABI ', abi);
 
             const avatar = () => createAvatar(funEmoji, {
                 seed: account,
