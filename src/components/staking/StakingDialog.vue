@@ -1,7 +1,6 @@
 <script lang="ts">
 import { computed, defineComponent, PropType, ref } from 'vue';
 import { Token } from 'src/types';
-import { mapGetters } from 'vuex';
 import StakingInfo from 'src/components/staking/StakingInfo.vue';
 import StakeFromResources from 'src/components/staking/StakeFromResources.vue';
 import ProcessingTab from 'src/components/staking/ProcessingTab.vue';
@@ -76,10 +75,10 @@ export default defineComponent({
             withdrawRexFund,
             prettyRexFund,
             accountStore,
+            account: computed(() => accountStore.account.accountName),
         };
     },
     computed: {
-        ...mapGetters({ account: 'account/accountName' }),
         transactionForm(): boolean {
             return !(this.transactionError || this.transactionId);
         },
@@ -88,7 +87,7 @@ export default defineComponent({
         async sendTransaction(): Promise<void> {
             const actionAccount = this.sendToken.contract;
             const data = {
-                from: this.account as string,
+                from: this.account,
                 to: this.recievingAccount,
                 quantity: `${this.sendAmount} ${this.sendToken.symbol}`,
                 memo: this.memo,
