@@ -26,7 +26,6 @@ jobs:
           git pull --autostash
           cp ~/obe.env .env
           rm -rf dist/spa/*
-          nvm use 16
           yarn install --ignore-engines
           yarn build
           node -v
