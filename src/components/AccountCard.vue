@@ -1,15 +1,12 @@
 <script lang="ts">
 import { Token, GetTableRowsParams, RexbalRows, RexPoolRows } from 'src/types';
 import { defineComponent, computed, ref, onMounted, watch } from 'vue';
-import { useAntelopeStore } from 'src/store/antelope.store';
-import { useStore } from 'src/store';
 import PercentCircle from 'src/components/PercentCircle.vue';
 import SendDialog from 'src/components/SendDialog.vue';
 import ResourcesDialog from 'src/components/resources/ResourcesDialog.vue';
 import StakingDialog from 'src/components/staking/StakingDialog.vue';
 import DateField from 'src/components/DateField.vue';
-import { date, useQuasar } from 'quasar';
-import { copyToClipboard } from 'quasar';
+import { date, useQuasar, copyToClipboard } from 'quasar';
 import { getChain } from 'src/config/ConfigManager';
 import { api } from 'src/api';
 import { useRouter } from 'vue-router';
@@ -19,6 +16,10 @@ import { formatCurrency } from 'src/utils/string-utils';
 import ConfigManager from 'src/config/ConfigManager';
 import { AccountPageSettings } from 'src/types/UiCustomization';
 import { StakedbalRows } from 'src/types/TableRows';
+import { useResourceStore } from 'src/stores/resources';
+import { useChainStore } from 'src/stores/chain';
+import { useAccountStore } from 'src/stores/account';
+import { useProfileStore } from 'src/stores/profiles';
 
 const chain = getChain();
 export default defineComponent({
@@ -39,8 +40,10 @@ export default defineComponent({
     setup(props) {
         const $q = useQuasar();
         const router = useRouter();
-        const antelopeStore = useAntelopeStore();
-        const store = useStore();
+        const resourceStore = useResourceStore();
+        const chainStore = useChainStore();
+        const accountStore = useAccountStore();
+        const profileStore = useProfileStore();
 
         const accountPageSettings = computed((): AccountPageSettings => ConfigManager.get().getCurrentChain().getUiCustomization().accountPageSettings);
 
@@ -56,9 +59,7 @@ export default defineComponent({
         const KILO_UNIT = ref<number>(Math.pow(10, 3));
         const resources = ref<number>(0);
         const delegatedByOthers = ref<number>(0.0);
-        const delegatedToOthers = computed(
-            (): number => antelopeStore.resources.getDelegatedToOthersAggregated(),
-        );
+        const delegatedToOthers = computed(() => resourceStore.getDelegatedToOthersAggregated);
         const rexStaked = ref<number>(0);
         const rexProfits = ref<number>(0);
         const rexDeposits = ref<number>(0);
@@ -98,7 +99,7 @@ export default defineComponent({
 
         const staked = computed((): number => stakedRefund.value + stakedNET.value + stakedCPU.value);
 
-        const token = computed((): Token => antelopeStore.state.chain.token);
+        const token = computed((): Token => chainStore.token);
 
         const liquidNative = computed((): number => accountData.value?.core_liquid_balance?.value
             ? accountData.value.core_liquid_balance.value
@@ -123,17 +124,17 @@ export default defineComponent({
             return result;
         });
 
-        const isAccount = computed((): boolean => antelopeStore.state.account.accountName === props.account);
+        const isAccount = computed((): boolean => accountStore.accountName === props.account);
 
         const createTimeFormat = computed((): string =>
             date.formatDate(createTime.value, 'DD MMMM YYYY @ hh:mm A'),
         );
 
-        let profile = computed(() => store.state.profiles.profiles.get(props.account));
+        let profile = computed(() => profileStore.profiles.get(props.account));
 
 
         const setToken = (value: Token) => {
-            void antelopeStore.commit('chain/setToken', value);
+            void chainStore.setToken(value);
         };
 
         const loadAccountData = async (): Promise<void> => {
@@ -158,7 +159,7 @@ export default defineComponent({
 
         const loadProfile = async () => {
             if (!profile.value) {
-                await store.dispatch('profiles/fetchProfileByAccount', props.account);
+                await profileStore.setProfile(props.account);
             }
         };
 
@@ -242,8 +243,7 @@ export default defineComponent({
             }
         };
 
-        const updateResources = (payload: {account:string, force: boolean}) =>
-            antelopeStore.resources.updateResources(payload);
+        const updateResources = (payload: {account:string, force: boolean}) => resourceStore.updateResources(payload);
 
         const getRexFund = async () => {
             const paramsrexfund = {
@@ -398,11 +398,11 @@ export default defineComponent({
         onMounted(async () => {
             usdPrice.value = await chain.getUsdPrice();
             await loadAccountData();
-            await antelopeStore.dispatch('account/updateRexData', {
+            await accountStore.updateRexData({
                 account: props.account,
             });
             loadSystemToken();
-            void antelopeStore.dispatch('chain/updateRamPrice');
+            void chainStore.updateRamPrice();
         });
 
         watch(
@@ -410,7 +410,7 @@ export default defineComponent({
             async () => {
                 resetBalances();
                 await loadAccountData();
-                await antelopeStore.dispatch('account/updateRexData', {
+                await accountStore.updateRexData({
                     account: props.account,
                 });
             },

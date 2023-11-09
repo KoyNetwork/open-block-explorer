@@ -1,6 +1,6 @@
 <script lang="ts">
 import { computed, defineComponent, onMounted, ref } from 'vue';
-import { useStore } from 'src/store';
+import { useProfileStore } from 'src/stores/profiles';
 import ProfileCard from 'src/components/ProfileCard.vue';
 
 export default defineComponent({
@@ -20,13 +20,13 @@ export default defineComponent({
     },
     setup(props) {
         const accAccount = computed(() => props.account);
-        const store = useStore();
-        const profile = computed(() => store.state.profiles.profiles.get(accAccount.value));
+        const profileStore = useProfileStore();
+        const profile = computed(() => profileStore.profiles.get(accAccount.value));
         const hover = ref(false);
 
         onMounted(async () => {
             if (props.type !== 'transaction' && !profile.value) {
-                await store.dispatch('profiles/fetchProfileByAccount', accAccount.value);
+                await profileStore.setProfile(accAccount.value);
             }
         });
 
