@@ -37,7 +37,7 @@ export interface AccountStateInterface {
 }
 
 const chain = getChain();
-const { symbol } = chain.getSystemToken();
+const { symbol, precision } = chain.getSystemToken();
 
 export const useAccountStore = defineStore('account', {
     state: (): AccountStateInterface => ({
@@ -62,7 +62,7 @@ export const useAccountStore = defineStore('account', {
             // /** Account created as unix timestamp. */
             // created: TimePoint;
             /** Account core token balance */
-            core_liquid_balance: Asset.from(0, symbol),
+            core_liquid_balance: Asset.from(0, `${precision},${symbol}`),
             // ram_quota: Int64;
             // net_weight: Int64;
             // cpu_weight: Int64;
