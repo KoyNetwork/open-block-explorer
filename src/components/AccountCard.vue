@@ -19,6 +19,7 @@ import { StakedbalRows } from 'src/types/TableRows';
 import { useResourceStore } from 'src/stores/resources';
 import { useChainStore } from 'src/stores/chain';
 import { useAccountStore } from 'src/stores/account';
+import { useProfileStore } from 'src/stores/profiles';
 
 const chain = getChain();
 export default defineComponent({
@@ -42,6 +43,7 @@ export default defineComponent({
         const resourceStore = useResourceStore();
         const chainStore = useChainStore();
         const accountStore = useAccountStore();
+        const profileStore = useProfileStore();
 
         const accountPageSettings = computed((): AccountPageSettings => ConfigManager.get().getCurrentChain().getUiCustomization().accountPageSettings);
 
@@ -128,7 +130,7 @@ export default defineComponent({
             date.formatDate(createTime.value, 'DD MMMM YYYY @ hh:mm A'),
         );
 
-        let profile = computed(() => store.state.profiles.profiles.get(props.account));
+        let profile = computed(() => profileStore.profiles.get(props.account));
 
 
         const setToken = (value: Token) => {
@@ -157,7 +159,7 @@ export default defineComponent({
 
         const loadProfile = async () => {
             if (!profile.value) {
-                await store.dispatch('profiles/fetchProfileByAccount', props.account);
+                await profileStore.setProfile(props.account);
             }
         };
 

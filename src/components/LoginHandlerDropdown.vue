@@ -1,19 +1,20 @@
 <script lang="ts">
-import { computed, defineComponent, ref } from 'vue';
+import { computed, defineComponent, ref, onMounted } from 'vue';
 import WalletModal from 'src/components/WalletModal.vue';
-import { useStore } from 'src/store';
 import { getAuthenticators } from 'src/boot/ual';
 import { Authenticator } from 'universal-authenticator-library';
 import { getChain } from 'src/config/ConfigManager';
+import { useProfileStore } from 'src/stores/profiles';
+import { useAccountStore } from 'src/stores/account';
 
 export default defineComponent({
     name: 'LoginHandlerDropdown',
     components: { WalletModal },
     setup() {
         const authenticators = getAuthenticators();
-        const store = useStore();
-        const account = computed(() => store.state.account.accountName);
-        const avatar = computed(() => store.state.profiles.profiles.get(account.value)?.avatar);
+        const accountStore = useAccountStore();
+        const profileStore = useProfileStore();
+        const avatar = computed(() => profileStore.profiles.get(accountStore.accountName)?.avatar);
         const showModal = ref(false);
 
         const getAuthenticator = (): Authenticator => {
@@ -40,12 +41,12 @@ export default defineComponent({
 
         onMounted(async () => {
             if (!avatar.value) {
-                await store.dispatch('profiles/fetchProfileByAccount', account.value);
+                await profileStore.setProfile(accountStore.accountName);
             }
         });
 
         return {
-            account,
+            account: accountStore.accountName,
             showModal,
             disconnectLabel: 'Disconnect',
             onLogout,
