@@ -27,7 +27,7 @@ jobs:
           cp ~/obe.env .env
           rm -rf dist/spa/*
           source ~/.nvm/nvm.sh
-          nvm use 16
+          nvm use 20
           yarn install
           yarn build
           node -v
