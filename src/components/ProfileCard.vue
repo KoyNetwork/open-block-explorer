@@ -22,7 +22,7 @@ export default defineComponent({
 
 <template>
 <div class="profileCard__container">
-    <svg class="profileCard__avatar" v-html="profile?.avatar" />
+    <img class="profileCard__avatar" :src="profile?.avatar">
 </div>
 </template>
 

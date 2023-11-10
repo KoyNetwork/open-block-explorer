@@ -479,7 +479,7 @@ export default defineComponent({
         <q-card-section class="resources-container">
             <div class="inline-section">
                 <div class="items-center justify-center row full-height q-gutter-sm">
-                    <svg v-if="profile?.avatar" class="avatar-image" v-html="profile.avatar" />
+                    <img v-if="profile?.avatar" class="avatar-image" :src="profile.avatar" >
                     <div class="justify-center column">
                         <div class="items-center row">
                             <div class="text-title">{{ account }}</div>
