@@ -8,7 +8,7 @@ import AccountCard from 'components/AccountCard.vue';
 import ContractTabs from 'components/contract/ContractTabs.vue';
 import { api } from 'src/api';
 import { useRoute, useRouter } from 'vue-router';
-import { useStore } from 'src/store';
+import { useAccountStore } from 'src/stores/account';
 import ConfigManager from 'src/config/ConfigManager';
 import { AccountPageSettings } from 'src/types/UiCustomization';
 
@@ -23,18 +23,18 @@ export default defineComponent({
         ContractTabs,
     },
     setup() {
-        const store = useStore();
+        const accountStore = useAccountStore();
         const route = useRoute();
         const router = useRouter();
         const accountPageSettings = computed((): AccountPageSettings => ConfigManager.get().getCurrentChain().getUiCustomization().accountPageSettings);
 
         const tab = ref<string>((route.query['tab'] as string) || 'transactions');
         const account = computed(() => (route.params.account as string) || '');
-        const abi = computed(() => store.state.account.abi.abi);
+        const abi = computed(() => accountStore.abi.abi);
         const tokenList = ref(api.getTokens(account.value));
 
         onMounted(async () => {
-            await store.dispatch('account/updateABI', route.params.account);
+            await accountStore.updateABI(route.params.account as string);
         });
 
         watch([tab], () => {
@@ -93,13 +93,16 @@ export default defineComponent({
 
 <style lang="sass">
 .account-card
-  width: 550px
-  border-radius: .5rem
-  margin-top: 1rem
-  margin-left: auto
-  margin-right: auto
-  margin-bottom: 2rem
-  box-shadow: none
+    width: 550px
+    border-radius: .5rem
+    margin-top: 1rem
+    margin-left: auto
+    margin-right: auto
+    margin-bottom: 2rem
+    box-shadow: none
 .tabs
-  color: white
+    color: white
+
+.q-tab-panels--dark
+    background: unset
 </style>

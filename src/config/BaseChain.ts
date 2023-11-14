@@ -16,6 +16,8 @@ export const DEFAULT_THEME = {
     info: '#31CCEC',
     warning: '#F2C037',
     'color-map': '#8C8C8C',
+    'color-background': '#11589e',
+    'color-background-gradient': 'linear-gradient(180deg, #5d5d5d 0%, #5d5d5d 147.34%)',
     'color-sidebar-selected': '#d1d1d1',
     'color-primary-gradient': 'linear-gradient(90deg, #5d5d5d 0%, #5d5d5d 100%)',
     'color-secondary-gradient': 'linear-gradient(180deg, #5d5d5d 0%, #5d5d5d 147.34%)',
@@ -32,6 +34,7 @@ export const DEFAULT_THEME = {
     'color-header-support-background': 'linear-gradient(180deg, #4C4C4C 0%, #3B3B3B 147.34%)',
     'color-graph-shadow': '#3f65c228',
     'color-footer-background': '#000000',
+    'color-footer-text': '#FFFFFF',
 };
 
 export const baseUiConfiguration: UiCustomization = {
@@ -64,6 +67,7 @@ export const baseUiConfiguration: UiCustomization = {
         hideKeysTab: false,
         hideChildrenTab: false,
         hideContractsTab: false,
+        hideCreatedBy: false,
     },
 };
 
@@ -98,6 +102,10 @@ export default abstract class BaseChain implements Chain {
   abstract getUsdPrice(): Promise<number>;
   abstract getMapDisplay(): boolean;
   abstract getTheme(): Theme;
+
+  useDarkMode(): boolean {
+      return false;
+  }
 
   getUiCustomization(): UiCustomization {
       return baseUiConfiguration;

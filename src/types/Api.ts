@@ -10,6 +10,9 @@ import {
     UInt32Type,
     API,
     PublicKey,
+    ActionType,
+    ABIDef,
+    ABISerializable,
 } from '@greymass/eosio';
 import { Transaction } from 'src/types/Transaction';
 import {
@@ -21,85 +24,106 @@ import {
     Block,
     ActionData,
     Get_actions,
-} from 'src/types/Actions';
+    ChainInfo,
+    ProducerSchedule,
+    GetProposalsProps,
+    GetProposals,
+    GetProducers,
+    ABI,
+    GetActionsResponse,
+} from 'src/types';
 
 export type AccountCreatorInfo = {
-  creator: string;
-  timestamp: string;
-  trx_id: string;
-}
+    creator: string;
+    timestamp: string;
+    trx_id: string;
+};
 
-export type TableIndexType =
-  | Name
-  | UInt64
-  | UInt128
-  | Float64
-  | Checksum256
-  | Checksum160;
+export type TableIndexType = Name | UInt64 | UInt128 | Float64 | Checksum256 | Checksum160;
 
 export interface HyperionTransactionFilter {
-  page?: number; // the page variable sustitutes the skip
-  skip?: number;
-  limit?: number;
-  account?: string;
-  notified?: string;
-  sort?: 'desc' | 'asc';
-  after?: string;
-  before?: string;
-  extras?: { [key: string]: string };
+    page?: number; // the page variable sustitutes the skip
+    skip?: number;
+    limit?: number;
+    account?: string;
+    notified?: string;
+    sort?: 'desc' | 'asc';
+    after?: string;
+    before?: string;
+    extras?: { [key: string]: string };
 }
 
 export interface GetTableRowsParams {
-  /** The name of the smart contract that controls the provided table. */
-  code: NameType;
-  /** Name of the table to query. */
-  table: NameType;
-  /** The account to which this data belongs, if omitted will be set to be same as `code`. */
-  scope?: string | TableIndexType;
-  /** Lower lookup bound. */
-  lower_bound?: TableIndexType;
-  /** Upper lookup bound. */
-  upper_bound?: TableIndexType;
-  /** How many rows to fetch, defaults to 10 if unset. */
-  limit?: UInt32Type;
-  /** Whether to iterate records in reverse order. */
-  reverse?: boolean;
-  /** Position of the index used, defaults to primary. */
-  index_position?:
-    | 'primary'
-    | 'secondary'
-    | 'tertiary'
-    | 'fourth'
-    | 'fifth'
-    | 'sixth'
-    | 'seventh'
-    | 'eighth'
-    | 'ninth'
-    | 'tenth';
-  /**
-   * Whether node should try to decode row data using code abi.
-   * Determined automatically based the `type` param if omitted.
-   */
-  json?: boolean;
-  /**
-   * Set to true to populate the ram_payers array in the response.
-   */
-  show_payer?: boolean;
+    /** The name of the smart contract that controls the provided table. */
+    code: NameType;
+    /** Name of the table to query. */
+    table: NameType;
+    /** The account to which this data belongs, if omitted will be set to be same as `code`. */
+    scope?: string | TableIndexType;
+    /** Lower lookup bound. */
+    lower_bound?: TableIndexType;
+    /** Upper lookup bound. */
+    upper_bound?: TableIndexType;
+    /** How many rows to fetch, defaults to 10 if unset. */
+    limit?: UInt32Type;
+    /** Whether to iterate records in reverse order. */
+    reverse?: boolean;
+    /** Position of the index used, defaults to primary. */
+    index_position?:
+        | 'primary'
+        | 'secondary'
+        | 'tertiary'
+        | 'fourth'
+        | 'fifth'
+        | 'sixth'
+        | 'seventh'
+        | 'eighth'
+        | 'ninth'
+        | 'tenth';
+    /**
+     * Whether node should try to decode row data using code abi.
+     * Determined automatically based the `type` param if omitted.
+     */
+    json?: boolean;
+    /**
+     * Set to true to populate the ram_payers array in the response.
+     */
+    show_payer?: boolean;
 }
 
 export type ApiClient = {
-  getAccount: (address: string) => Promise<API.v1.AccountObject>;
-  getKeyAccounts: (key: PublicKey) => Promise<{ account_names: Name[] }>;
-  getHyperionAccountData: (address: string) => Promise<AccountDetails>;
-  getCreator: (address: string) => Promise<any>;
-  getTokens: (address: string) => Promise<Token[]>;
-  getTransactions: (filter: HyperionTransactionFilter) => Promise<Action[]>;
-  getTransaction: (address: string) => Promise<ActionData>;
-  getTransactionV1: (id: string) => Promise<Transaction>;
-  getChildren: (address: string) => Promise<Action[]>;
-  getPermissionLinks: (address: string) => Promise<PermissionLinks[]>;
-  getTableByScope: (data: unknown) => Promise<TableByScope[]>;
-  getBlock: (block: string) => Promise<Block>;
-  getActions: (address: string, filter: string) => Promise<Get_actions>;
-  getApy: () => Promise<string>;
+    getAccount: (address: string) => Promise<API.v1.AccountObject>;
+    getKeyAccounts: (key: PublicKey) => Promise<{ account_names: Name[] }>;
+    getHyperionAccountData: (address: string) => Promise<AccountDetails>;
+    getCreator: (address: string) => Promise<any>;
+    getTokens: (address: string) => Promise<Token[]>;
+    getTransactions: (filter: HyperionTransactionFilter) => Promise<GetActionsResponse>;
+    getTransaction: (address: string) => Promise<ActionData>;
+    getTransactionV1: (id: string) => Promise<Transaction>;
+    getChildren: (address: string) => Promise<Action[]>;
+    getPermissionLinks: (address: string) => Promise<PermissionLinks[]>;
+    getTableByScope: (data: unknown) => Promise<TableByScope[]>;
+    getBlock: (block: string) => Promise<Block>;
+    getActions: (address: string, filter: string) => Promise<Get_actions>;
+    getApy: () => Promise<string>;
+    getInfo: () => Promise<ChainInfo>;
+    getSchedule: () => Promise<ProducerSchedule>;
+    getProposals: ({
+        proposer,
+        proposal,
+        requested,
+        provided,
+        executed,
+        limit,
+        skip,
+    }: GetProposalsProps) => Promise<GetProposals>;
+    getProducers: () => Promise<GetProducers>;
+    getABI: (account: string) => Promise<ABI>;
+    getProducerSchedule: () => Promise<{
+        active: { producers: { producer_name: string }[] };
+    }>;
+    getTokenBalances: (address: string) => Promise<unknown>;
+    getTableRows: (tableInput: GetTableRowsParams) => Promise<unknown>;
+    deserializeActionData: (data: ActionType, abi: ABIDef) => Promise<ABISerializable>;
+    serializeActionData: (account: string, name: string, data: unknown) => Promise<unknown>;
 };

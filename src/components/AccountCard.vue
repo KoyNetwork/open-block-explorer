@@ -1,14 +1,12 @@
 <script lang="ts">
 import { Token, GetTableRowsParams, RexbalRows, RexPoolRows } from 'src/types';
 import { defineComponent, computed, ref, onMounted, watch } from 'vue';
-import { useAntelopeStore } from 'src/store/antelope.store';
 import PercentCircle from 'src/components/PercentCircle.vue';
 import SendDialog from 'src/components/SendDialog.vue';
 import ResourcesDialog from 'src/components/resources/ResourcesDialog.vue';
 import StakingDialog from 'src/components/staking/StakingDialog.vue';
 import DateField from 'src/components/DateField.vue';
-import { date, useQuasar } from 'quasar';
-import { copyToClipboard } from 'quasar';
+import { date, useQuasar, copyToClipboard } from 'quasar';
 import { getChain } from 'src/config/ConfigManager';
 import { api } from 'src/api';
 import { useRouter } from 'vue-router';
@@ -18,6 +16,10 @@ import { formatCurrency } from 'src/utils/string-utils';
 import ConfigManager from 'src/config/ConfigManager';
 import { AccountPageSettings } from 'src/types/UiCustomization';
 import { StakedbalRows } from 'src/types/TableRows';
+import { useResourceStore } from 'src/stores/resources';
+import { useChainStore } from 'src/stores/chain';
+import { useAccountStore } from 'src/stores/account';
+import { useProfileStore } from 'src/stores/profiles';
 
 const chain = getChain();
 export default defineComponent({
@@ -38,7 +40,10 @@ export default defineComponent({
     setup(props) {
         const $q = useQuasar();
         const router = useRouter();
-        const store = useAntelopeStore();
+        const resourceStore = useResourceStore();
+        const chainStore = useChainStore();
+        const accountStore = useAccountStore();
+        const profileStore = useProfileStore();
 
         const accountPageSettings = computed((): AccountPageSettings => ConfigManager.get().getCurrentChain().getUiCustomization().accountPageSettings);
 
@@ -54,9 +59,7 @@ export default defineComponent({
         const KILO_UNIT = ref<number>(Math.pow(10, 3));
         const resources = ref<number>(0);
         const delegatedByOthers = ref<number>(0.0);
-        const delegatedToOthers = computed(
-            (): number => store.resources.getDelegatedToOthersAggregated(),
-        );
+        const delegatedToOthers = computed(() => resourceStore.getDelegatedToOthersAggregated);
         const rexStaked = ref<number>(0);
         const rexProfits = ref<number>(0);
         const rexDeposits = ref<number>(0);
@@ -93,9 +96,10 @@ export default defineComponent({
             (accountData.value?.refund_request?.net_amount.value ?? 0),
         );
 
+
         const staked = computed((): number => stakedRefund.value + stakedNET.value + stakedCPU.value);
 
-        const token = computed((): Token => store.state.chain.token);
+        const token = computed((): Token => chainStore.token);
 
         const liquidNative = computed((): number => accountData.value?.core_liquid_balance?.value
             ? accountData.value.core_liquid_balance.value
@@ -120,14 +124,17 @@ export default defineComponent({
             return result;
         });
 
-        const isAccount = computed((): boolean => store.state.account.accountName === props.account);
+        const isAccount = computed((): boolean => accountStore.accountName === props.account);
 
         const createTimeFormat = computed((): string =>
             date.formatDate(createTime.value, 'DD MMMM YYYY @ hh:mm A'),
         );
 
+        let profile = computed(() => profileStore.profiles.get(props.account));
+
+
         const setToken = (value: Token) => {
-            void store.commit('chain/setToken', value);
+            void chainStore.setToken(value);
         };
 
         const loadAccountData = async (): Promise<void> => {
@@ -135,6 +142,7 @@ export default defineComponent({
                 isLoading.value = true;
                 accountData.value = await api.getAccount(props.account);
                 await loadAccountCreatorInfo();
+                await loadProfile();
                 await loadBalances();
                 loadResources();
                 await loadStakedBalance();
@@ -146,6 +154,12 @@ export default defineComponent({
                 $q.notify(`account ${props.account} not found!`);
                 accountExists.value = false;
                 return;
+            }
+        };
+
+        const loadProfile = async () => {
+            if (!profile.value) {
+                await profileStore.setProfile(props.account);
             }
         };
 
@@ -229,8 +243,7 @@ export default defineComponent({
             }
         };
 
-        const updateResources = (payload: {account:string, force: boolean}) =>
-            store.resources.updateResources(payload);
+        const updateResources = (payload: {account:string, force: boolean}) => resourceStore.updateResources(payload);
 
         const getRexFund = async () => {
             const paramsrexfund = {
@@ -385,11 +398,11 @@ export default defineComponent({
         onMounted(async () => {
             usdPrice.value = await chain.getUsdPrice();
             await loadAccountData();
-            await store.dispatch('account/updateRexData', {
+            await accountStore.updateRexData({
                 account: props.account,
             });
             loadSystemToken();
-            void store.dispatch('chain/updateRamPrice');
+            void chainStore.updateRamPrice();
         });
 
         watch(
@@ -397,7 +410,7 @@ export default defineComponent({
             async () => {
                 resetBalances();
                 await loadAccountData();
-                await store.dispatch('account/updateRexData', {
+                await accountStore.updateRexData({
                     account: props.account,
                 });
             },
@@ -453,6 +466,7 @@ export default defineComponent({
             copy,
             formatAsset,
             updateTokenBalances,
+            profile,
         };
     },
 });
@@ -464,41 +478,41 @@ export default defineComponent({
     <q-card v-if="accountExists" class="account-card">
         <q-card-section class="resources-container">
             <div class="inline-section">
-                <div class="row justify-center full-height items-center">
-                    <div v-if="account !== system_account" class="col-6">
-                        <div class="text-title">{{ account }}</div>
-                    </div>
-                    <div v-else class="col-2">
-                        <div class="text-title">{{ account }}</div>
-                    </div>
-                    <div class="col-1">
-                        <q-btn
-                            class="float-right"
-                            flat
-                            round
-                            color="white"
-                            icon="content_copy"
-                            size="sm"
-                            @click="copy(account)"
-                        />
-                    </div>
-                </div>
-                <div
-                    v-if="creatingAccount && creatingAccount !== '__self__'"
-                    class="text-subtitle"
-                >
-                    created by
-                    <span>&nbsp;<a @click="loadCreatorAccount">{{ creatingAccount }}</a>&nbsp;</span>
-                    <div>
-                        <DateField :timestamp="createTime" showAge>&nbsp;</DateField>
-                        <q-tooltip>{{createTimeFormat}}</q-tooltip>
-                    </div><a class="q-ml-xs tx-link" @click="loadCreatorTransaction">
-                        <q-icon name="fas fa-link"/></a>
-                </div>
-                <div v-else class="text-subtitle">created<span>&nbsp;</span>
-                    <div>
-                        <DateField :timestamp="createTime" showAge>&nbsp;</DateField>
-                        <q-tooltip>{{createTimeFormat}}</q-tooltip>
+                <div class="items-center justify-center row full-height q-gutter-sm">
+                    <img v-if="profile?.avatar" class="avatar-image" :src="profile.avatar" >
+                    <div class="justify-center column">
+                        <div class="items-center row">
+                            <div class="text-title">{{ account }}</div>
+                            <q-btn
+                                class="float-right"
+                                flat
+                                round
+                                color="white"
+                                icon="content_copy"
+                                size="sm"
+                                @click="copy(account)"
+                            />
+                        </div>
+                        <div v-show="!accountPageSettings.hideCreatedBy">
+                            <div
+                                v-if="creatingAccount && creatingAccount !== '__self__'"
+                                class="text-subtitle"
+                            >
+                                created by
+                                <span>&nbsp;<a @click="loadCreatorAccount">{{ creatingAccount }}</a>&nbsp;</span>
+                                <div>
+                                    <DateField :timestamp="createTime" showAge>&nbsp;</DateField>
+                                    <q-tooltip>{{createTimeFormat}}</q-tooltip>
+                                </div><a class="q-ml-xs tx-link" @click="loadCreatorTransaction">
+                                    <q-icon name="fas fa-link"/></a>
+                            </div>
+                            <div v-else class="text-subtitle">created<span>&nbsp;</span>
+                                <div>
+                                    <DateField :timestamp="createTime" showAge>&nbsp;</DateField>
+                                    <q-tooltip>{{createTimeFormat}}</q-tooltip>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <q-space/>
@@ -534,7 +548,7 @@ export default defineComponent({
             </div>
         </q-card-section>
         <q-card-section class="resources-container">
-            <div class="row justify-center q-gutter-sm">
+            <div class="justify-center row q-gutter-sm">
                 <div v-if="isAccount" class="col-3">
                     <q-btn
                         :disable="tokensLoading || isLoading"
@@ -570,7 +584,6 @@ export default defineComponent({
                     <th class="text-left">BALANCE</th>
                 </tr>
                 <tbody class="table-body">
-                    <tr></tr>
                     <tr>
                         <td class="text-left total-label">TOTAL</td>
                         <td v-if="isLoading" class="text-right total-amount total-loading-spinner">
@@ -578,11 +591,10 @@ export default defineComponent({
                         </td>
                         <td v-else class="text-right total-amount">{{ formatAsset(totalTokens) }}</td>
                     </tr>
-                    <tr class="total-row">
+                    <tr v-show="!isLoading && totalValueString.length > 0" class="total-row">
                         <td class="text-left"></td>
-                        <td v-show="!isLoading" class="text-right total-value">{{ totalValueString }}</td>
+                        <td class="text-right total-value">{{ totalValueString }}</td>
                     </tr>
-                    <tr></tr>
                     <tr>
                         <td class="text-left">LIQUID</td>
                         <td class="text-right">{{ formatAsset(liquidNative) }}</td>
@@ -646,9 +658,9 @@ export default defineComponent({
     <q-card v-else class="account-card">
         <q-card-section class="resources-container">
             <div class="inline-section">
-                <div class="row justify-center full-height items-center">
+                <div class="items-center justify-center row full-height">
                     <div class="col-8"></div>
-                    <div class="text-title text-center">Sorry, the account {{ account }} could not be found.</div>
+                    <div class="text-center text-title">Sorry, the account {{ account }} could not be found.</div>
                 </div>
             </div>
         </q-card-section>
@@ -670,14 +682,23 @@ $medium:750px
   font-size: 36px
   max-width: 100%
   background: unset
+  margin-bottom: 16px
 
+  .avatar-image
+    height: 150px
+    width: 150px
+    object-fit: cover
+    border-radius: 30%
+
+  .q-table th
+    font-size: 1rem
   .q-table tbody td
-    font-size: 12px
+    font-size: 1rem
     &.total-label, &.total-value
       color: white
-      font-size: 14px
+      font-size: 1.25rem
     &.total-amount
-      font-size: 20px
+      font-size: 1.25rem
 
   .q-table__card
     background: unset
@@ -690,10 +711,9 @@ $medium:750px
       border-bottom: none
 
   .q-table thead tr, .q-table tbody td
-    height: 36px
-
+    height: 42px
     &.total-row
-      height: 48px
+      height: 52px
 
 .resources-container
   padding: 0
@@ -737,7 +757,7 @@ $medium:750px
 
 .total-amount
   color: white
-  font-size: 20px
+  font-size: 1.25rem
   font-weight: normal
 
 .total-value

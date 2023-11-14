@@ -44,16 +44,18 @@ const API_ENDPOINT = 'https://testnet.koyn.goodblock.io/v1';
 const S3_PRODUCER_BUCKET = '';
 const DISPLAY_MAP = false;
 const THEME = {
-    primary: '#006600',
+    primary: '#90B862',
     secondary: '#006600',
-    accent: '#BB0000',
-    dark: '#000000',
+    accent: '#CE1C61',
+    dark: '#131313',
     positive: '#21BA45',
     negative: '#ff0000',
     info: '#31CCEC',
     warning: '#F2C037',
     'color-map': '#115820',
-    'color-primary-gradient': 'linear-gradient(90deg, #006600 0%, #1AFF37 100%)',
+    'color-background': '#90B86226',
+    'color-background-gradient': 'linear-gradient(132.08deg, rgba(255, 255, 255, 0.325) 0%, rgba(255, 255, 255, 0.1235) 52.08%, rgba(255, 255, 255, 0) 100%)',
+    'color-primary-gradient': 'linear-gradient(90deg, #006600 0%, #2eb840 100%)',
     'color-secondary-gradient':
     'linear-gradient(180deg, #071A5F 0%, #571aff 147.34%)',
     'color-tertiary-gradient':
@@ -65,9 +67,11 @@ const THEME = {
     'color-separator-background': 'rgba(138, 101, 212, 0.1)',
     'color-header-background': '#006600',
     'color-header-border': '#006600',
-    'color-header-support-background': 'linear-gradient(180deg, #006600 0%, #1AFF37 100%)',
+    'color-header-support-background': 'linear-gradient(180deg, #006600 0%, #2eb840 100%)',
     'color-graph-shadow': '#CE1C6128',
-    'color-footer-background': '#006600',
+    'color-footer-background': '#82103C',
+    'color-footer-text': '#90B862',
+    'color-dropdown-card': '#115820',
 };
 export default class KoynTestnet extends BaseChain {
     getName(): string {
@@ -116,6 +120,10 @@ export default class KoynTestnet extends BaseChain {
         return THEME;
     }
 
+    useDarkMode(): boolean {
+        return true;
+    }
+
     getUiCustomization(): UiCustomization {
         return {
             ...baseUiConfiguration,
@@ -146,6 +154,7 @@ export default class KoynTestnet extends BaseChain {
                 hideKeysTab: false,
                 hideChildrenTab: true,
                 hideContractsTab: false,
+                hideCreatedBy: true,
             },
         };
     }

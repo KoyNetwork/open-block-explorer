@@ -28,6 +28,9 @@ export default defineComponent({
                 'owner',
                 'account_name',
                 'voter',
+                'payer_account',
+                'receiver_account',
+                'producer',
             ];
             return accountRegEx.includes(data);
         }
@@ -78,9 +81,11 @@ export default defineComponent({
         />
     </template>
     <template v-else>
-        <span class="text-bold">{{ key }}:&nbsp;</span>
-        <AccountFormat v-if="isAccount(key)" :account="payload[key]" type="account">&nbsp;</AccountFormat>
-        <span v-else>{{ payload[key] }}</span>
+        <div class="row items-center">
+            <span class="text-bold text-center">{{ key }}:&nbsp;</span>
+            <AccountFormat v-if="isAccount(key)" :account="payload[key]" type="account">&nbsp;</AccountFormat>
+            <span v-else>{{ payload[key] }}</span>
+        </div>
     </template>
 </div>
 </template>

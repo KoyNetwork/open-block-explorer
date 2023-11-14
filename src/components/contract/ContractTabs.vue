@@ -4,17 +4,17 @@ import { defineComponent, ref, computed, watch } from 'vue';
 import ContractTables from 'src/components/contract/ContractTables.vue';
 import ContractActions from 'src/components/contract/ContractActions.vue';
 import JsonViewer from 'vue-json-viewer';
-import { useStore } from 'src/store';
 import { useRoute, useRouter } from 'vue-router';
+import { useAccountStore } from 'src/stores/account';
 
 export default defineComponent({
     name: 'ContractTabs',
     setup() {
-        const store = useStore();
+        const accountStore = useAccountStore();
         const route = useRoute();
         const router = useRouter();
         const tab = ref<string>((route.query['tab1'] as string) || 'tables');
-        const abi = computed(() => store.state.account.abi);
+        const abi = computed(() => accountStore.abi);
 
         watch([tab], () => {
             let query = { ...route.query };
@@ -60,11 +60,12 @@ export default defineComponent({
                 <ContractActions/>
             </q-tab-panel>
             <q-tab-panel name="abi">
-                <q-card flat class="card--light-bg">
+                <q-card flat class="card--dark-bg">
                     <q-card-section>
                         <JsonViewer
                             :value="abi"
                             :expand-depth="5"
+                            theme="dark-mode-json-theme"
                             preview-mode="preview-mode"
                             boxed="boxed"
                             copyable="copyable"
