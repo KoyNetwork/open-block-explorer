@@ -45,7 +45,7 @@ export default defineComponent({
     class="items-center justify-center inline q-ma-0 accountFormat__link row q-gutter-xs"
     :href=" '/' + type + '/' + accAccount"
 >
-    <svg v-if="type !== 'transaction' && profile?.avatar" class="accountFormat__avatar" v-html="profile?.avatar" />
+    <img v-if="type !== 'transaction' && profile?.avatar" class="accountFormat__avatar" :src="profile?.avatar">
     <span class="q-ma-0"> {{type === 'transaction' ? accAccount.slice(0, 8) : accAccount}} </span>
     <q-tooltip v-if="type !== 'transaction' && profile?.avatar" :target="true">
         <ProfileCard :profile="profile"/>
@@ -64,5 +64,4 @@ export default defineComponent({
         height: 24px
         width: 24px
         object-fit: cover
-        border-radius: 30%
 </style>
