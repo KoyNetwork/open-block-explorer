@@ -22,10 +22,10 @@ export default defineComponent({
         const chainStore = useChainStore();
         const openTransaction = ref<boolean>(false);
         const stakingAccount = ref<string>(accountStore.accountName || '');
-        const liquidValue = computed((): number => accountStore.account.liquidValue);
+        const liquidValue = computed((): number => accountStore.liquidValue);
         const accountTotal = computed((): string =>
             (accountStore.data.core_liquid_balance ?? liquidValue.value).toString());
-        const accountName = computed((): string => accountStore.account.accountName);
+        const accountName = computed((): string => accountStore.accountName);
 
         const accountTotalAsNumber = computed(() => assetToAmount(accountTotal.value));
         const cpuTokens = ref<string>('0');

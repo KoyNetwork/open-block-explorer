@@ -3,7 +3,7 @@ import { computed, defineComponent, PropType, ref } from 'vue';
 import { Token } from 'src/types';
 import StakingInfo from 'src/components/staking/StakingInfo.vue';
 // import StakeFromResources from 'src/components/staking/StakeFromResources.vue';
-import ProcessingTab from 'src/components/staking/ProcessingTab.vue';
+// import ProcessingTab from 'src/components/staking/ProcessingTab.vue';
 import StakingTab from 'src/components/staking/StakingTab.vue';
 import UnstakingTab from 'src/components/staking/UnstakingTab.vue';
 import HistoryTab from 'src/components/staking/HistoryTab.vue';
@@ -75,7 +75,7 @@ export default defineComponent({
             withdrawRexFund,
             prettyRexFund,
             accountStore,
-            account: computed(() => accountStore.account.accountName),
+            account: computed(() => accountStore.accountName),
         };
     },
     computed: {

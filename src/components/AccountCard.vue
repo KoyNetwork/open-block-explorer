@@ -78,12 +78,12 @@ export default defineComponent({
         const radius = ref(44);
         const stakedResources = ref(0);
 
-        const stakedBal = computed((): number => accountStore.account.stakedBal);
-        const unstakedBal = computed((): number => accountStore.account.unstakedBal);
-        const availableToUnstake = computed((): number => accountStore.account.availableToUnstakeVal);
-        const availableToClaim = computed((): number => accountStore.account.claimableAmountVal);
-        const lastClaim = computed((): Date => accountStore.account.lastClaimTime);
-        const lastUnstake = computed((): Date =>  accountStore.account.lastUnstakeTime);
+        const stakedBal = computed((): number => accountStore.stakedBal);
+        const unstakedBal = computed((): number => accountStore.unstakedBal);
+        const availableToUnstake = computed((): number => accountStore.availableToUnstakeVal);
+        const availableToClaim = computed((): number => accountStore.claimableAmountVal);
+        const lastClaim = computed((): Date => accountStore.lastClaimTime);
+        const lastUnstake = computed((): Date =>  accountStore.lastUnstakeTime);
 
         const accountExists = ref<boolean>(true);
         const openSendDialog = ref<boolean>(false);
@@ -104,7 +104,7 @@ export default defineComponent({
 
         const token = computed((): Token => chainStore.token);
 
-        const liquidValue = computed((): number => accountStore.account.liquidValue);
+        const liquidValue = computed((): number => accountStore.liquidValue);
         const liquidNative = computed((): number => accountData.value?.core_liquid_balance?.value
             ? accountData.value.core_liquid_balance.value
             : liquidValue.value);
@@ -149,7 +149,7 @@ export default defineComponent({
                 await loadProfile();
                 await loadBalances();
                 loadResources();
-                void accountStore.updateKoyStakedData({ account: props.account });
+                await accountStore.updateKoyStakedData({ account: props.account });
                 setTotalBalance();
                 await updateTokenBalances();
                 await updateResources({ account: props.account, force: true });
@@ -383,13 +383,17 @@ export default defineComponent({
         };
 
         onMounted(async () => {
-            usdPrice.value = await chain.getUsdPrice();
-            await loadAccountData();
-            await accountStore.updateRexData({
-                account: props.account,
-            });
-            loadSystemToken();
-            void chainStore.updateRamPrice();
+            try {
+                usdPrice.value = await chain.getUsdPrice();
+                await loadAccountData();
+                await accountStore.updateRexData({
+                    account: props.account,
+                });
+                loadSystemToken();
+                void chainStore.updateRamPrice();
+            } catch(e) {
+                console.error(e);
+            }
         });
 
         watch(
@@ -642,7 +646,7 @@ export default defineComponent({
                     </tr>
                     <tr>
                         <td class="text-left">LAST CLAIM</td>
-                        <td class="text-right">{{ lastClaim.toDateString() }}</td>
+                        <td class="text-right">{{ lastClaim?.toDateString() }}</td>
                     </tr>
                     <tr>
                         <td class="text-left">AVAILABLE TO UNSTAKE</td>
@@ -650,7 +654,7 @@ export default defineComponent({
                     </tr>
                     <tr>
                         <td class="text-left">LAST UNSTAKE</td>
-                        <td class="text-right">{{ lastUnstake.toDateString() }}</td>
+                        <td class="text-right">{{ lastUnstake?.toDateString() }}</td>
                     </tr>
                 </tbody>
             </thead>

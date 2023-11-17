@@ -23,12 +23,12 @@ export default defineComponent({
         const transactionId = computed((): string => accountStore.TransactionId);
         const transactionError = computed(() => accountStore.TransactionError);
         const accountData = computed(() => accountStore.data as API.v1.AccountObject);
-        const accountName = computed((): string => accountStore.account.accountName);
+        const accountName = computed((): string => accountStore.accountName);
         const rexInfo = computed(() => accountStore.data.rex_info);
         const rexbal = computed(() => accountStore.rexbal);
         const maturedRex = computed(() => accountStore.maturedRex);
 
-        const liquidValue = computed((): number => accountStore.account.liquidValue);
+        const liquidValue = computed((): number => accountStore.liquidValue);
         const liquidBalance = computed(
             () => accountData.value?.core_liquid_balance?.value ?? liquidValue.value,
         );

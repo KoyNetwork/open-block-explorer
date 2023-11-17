@@ -32,7 +32,7 @@ export default defineComponent({
         // const rexInfo = computed(() => accountStore.data.rex_info);
         // const rexbal = computed(() => accountStore.rexbal);
         // const maturedRex = computed(() => accountStore.maturedRex);
-        const availableToUnstake = computed((): number => accountStore.account.availableToUnstakeVal);
+        const availableToUnstake = computed((): number => accountStore.availableToUnstakeVal);
         const maxUnlend = computed(() => availableToUnstake.value - .0001);
 
         function formatDec() {

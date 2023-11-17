@@ -41,6 +41,7 @@ export {
     RexPool,
     AccountsRows,
     StakedbalRows,
+    ConfigaRows,
 } from 'src/types/TableRows';
 export { BP } from 'src/types/BP';
 export { ChainInfo } from 'src/types/ChainInfo';

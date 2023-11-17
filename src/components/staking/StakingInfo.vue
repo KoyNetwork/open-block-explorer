@@ -1,14 +1,11 @@
 <script lang="ts">
 import { defineComponent, ref, computed, onMounted } from 'vue';
-import { getChain } from 'src/config/ConfigManager';
 import { API } from '@greymass/eosio';
 import { Token } from 'src/types';
 import { useChainStore } from 'src/stores/chain';
 import { useAccountStore } from 'src/stores/account';
 import { formatCurrency } from 'src/utils/string-utils';
 import ConfigManager from 'src/config/ConfigManager';
-
-const chain = getChain();
 
 export default defineComponent({
     name: 'StakingInfo',
@@ -20,8 +17,8 @@ export default defineComponent({
         const total = ref<string>('0');
         const token = computed((): Token => chainStore.token);
         const accountData = computed(() => accountStore.data as API.v1.AccountObject);
-        const accountName = computed((): string => accountStore.account.accountName);
-        const liquidValue = computed((): number => accountStore.account.liquidValue);
+        const accountName = computed((): string => accountStore.accountName);
+        const liquidValue = computed((): number => accountStore.liquidValue);
         const liquidBalance = computed(() => accountData.value.core_liquid_balance ?? liquidValue);
         const rexInfo = computed(() => accountData.value.rex_info);
         const coreRexBalance = computed(() => accountStore.coreRexBalance);
@@ -29,12 +26,12 @@ export default defineComponent({
         const maturedRex = computed(() => accountStore.maturedRex);
         const rexSavings = computed(() => accountStore.savingsRex);
         const precision = computed(() => ConfigManager.get().getCurrentChain().getSystemToken().precision);
-        const stakedValue = computed(() => formatCurrency(accountStore.account.stakedBal, precision.value, symbol.value));
+        const stakedValue = computed(() => formatCurrency(accountStore.stakedBal, precision.value, symbol.value));
 
 
-        const withdrawSpeed = computed(() => store.state?.account.withdrawSpeedVal);
-        const lastUnstake = computed(() => store.state?.account.lastUnstakeTime);
-        const availableToUnstake = computed(() => formatCurrency(store.state?.account.availableToUnstakeVal, 4, symbol.value));
+        const withdrawSpeed = computed(() => accountStore.withdrawSpeedVal);
+        const lastUnstake = computed(() => accountStore.lastUnstakeTime);
+        const availableToUnstake = computed(() => formatCurrency(accountStore.availableToUnstakeVal, 4, symbol.value));
 
         onMounted(async () => {
             if (!accountStore.data.core_liquid_balance) {

@@ -20,7 +20,7 @@ import { Theme } from 'src/types/Theme';
 import { Token } from 'src/types';
 import { UiCustomization } from 'src/types/UiCustomization';
 const CHAIN_ID =
-  '2081223fcffc96ce2d22ab63df414d1d6bf2f64f2e2922d500808decacd8b8b';
+  '2081223fcffc96ce2d22ab63df414d1d6bf2f64f2e2922d500808decacd8b8b9';
 const NAME = 'koyn-testnet';
 const DISPLAY = 'Koyn';
 const TOKEN = {
