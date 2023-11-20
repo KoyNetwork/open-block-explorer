@@ -22,7 +22,7 @@ export default defineComponent({
         const precision = computed(() => ConfigManager.get().getCurrentChain().getSystemToken().precision);
         const stakedValue = computed(() => formatCurrency(accountStore.stakedBal, precision.value, symbol.value));
 
-        const withdrawSpeed = computed(() => accountStore.withdrawSpeedVal);
+        const withdrawSpeed = computed(() => accountStore.withdrawSpeedVal.toPrecision(8));
         const lastUnstake = computed(() => accountStore.lastUnstakeTime);
         const availableToUnstake = computed(() => formatCurrency(accountStore.availableToUnstakeVal, 4, symbol.value));
 

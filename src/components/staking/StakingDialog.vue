@@ -130,13 +130,13 @@ export default defineComponent({
         },
     },
     async mounted() {
-        // try {
-        //     const apyValue = await this.$api.getApy();
-        //     this.apy = `${apyValue}%`;
-        // } catch (e) {
-        //     console.error(e);
-        // }
-        // await this.loadAccountData();
+        try {
+            const apyValue = await this.$api.getApy();
+            this.apy = `${apyValue}%`;
+        } catch (e) {
+            console.error(e);
+        }
+        await this.loadAccountData();
     },
 });
 </script>

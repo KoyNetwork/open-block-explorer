@@ -951,7 +951,7 @@ export const useAccountStore = defineStore('account', {
             const lastClaimTime = stakedBalRow ? new Date(stakedBalRow?.last_claim_date) : new Date();
             const timeSinceLastClaim = Math.floor(new Date().getTime() / 1000) - lastClaimTime?.getTime() / 1000;
             const dailyYield = (stakedBal * (dailyYieldPercentage / 1_000_000)) / 100;
-            const claimableAmountVal = (dailyYield / (24 * 60 * 60)) * timeSinceLastClaim;
+            const claimableAmountVal = Math.max((dailyYield / (24 * 60 * 60)) * timeSinceLastClaim, 0);
 
             void this.setKoyWalletValue({
                 liquidValue,

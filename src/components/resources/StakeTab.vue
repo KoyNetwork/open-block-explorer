@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, ref, computed, onMounted } from 'vue';
+import { defineComponent, ref, computed } from 'vue';
 import ViewTransaction from 'src/components/ViewTransanction.vue';
 import { getChain } from 'src/config/ConfigManager';
 import { formatCurrency, isValidAccount } from 'src/utils/string-utils';
@@ -22,10 +22,8 @@ export default defineComponent({
         const chainStore = useChainStore();
         const openTransaction = ref<boolean>(false);
         const stakingAccount = ref<string>(accountStore.accountName || '');
-        const liquidValue = computed((): number => accountStore.liquidValue);
         const accountTotal = computed((): string =>
-            (accountStore.data.core_liquid_balance ?? liquidValue.value).toString());
-        const accountName = computed((): string => accountStore.accountName);
+            (accountStore.data.core_liquid_balance).toString());
 
         const accountTotalAsNumber = computed(() => assetToAmount(accountTotal.value));
         const cpuTokens = ref<string>('0');
@@ -51,12 +49,6 @@ export default defineComponent({
                     .replace(/[^0-9.]/g, '');
             }
         }
-
-        onMounted(async () => {
-            if (!accountStore.data.core_liquid_balance) {
-                await accountStore.updateKoyStakedData({ account: accountName.value });
-            }
-        });
 
         return {
             openTransaction,
