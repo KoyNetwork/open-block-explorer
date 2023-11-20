@@ -156,7 +156,7 @@ export default defineComponent({
                             <div class="col-auto text-h6 text-white">REX fund: {{ prettyRexFund }}</div>
                             <div class="col-auto">
                                 <q-btn
-                                    class="full-width button-accent"
+                                    class="full-width"
                                     label="Withdraw"
                                     flat
                                     @click="withdrawRexFund"
@@ -202,25 +202,22 @@ export default defineComponent({
 </template>
 
 <style lang="sass" scoped>
+.q-dialog
+  // background guarantees opacity
+  background: var(--q-dark)
 
 .rexCard
   color: $grey-6
-  background: radial-gradient(circle at 48% 100%, rgba(108, 35, 255, 1) 0%, rgba(84, 0, 253, 1) 20%, rgba(2, 27, 100, 1) 92%)
+  background-image: linear-gradient(to right, var(--q-color-background), var(--q-color-background)), var(--q-color-background-gradient)
+
   .send-icon
     padding-bottom: 30px
-  .button-accent
-    background: rgba(108, 35, 255, 1)
-    border-radius: 4px
-    color: $grey-4
-  .color-grey-3
-    color: $grey-3
 
 .sarrowButton
   background: rgba($grey-9, 0.1)
 
 .selector-container
   cursor: pointer
-  background: rgba(108, 35, 255, 1)
   border-radius: 4px
   height: 40px
   margin-top: 1px

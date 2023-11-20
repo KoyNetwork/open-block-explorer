@@ -119,14 +119,12 @@ export default defineComponent({
                         @blur='formatDec'
                     />
                 </div>
-                <div class="row">
-                    <q-btn
-                        class="full-width button-accent"
-                        :label="'Unstake ' + symbol"
-                        flat
-                        @click="unstake"
-                    />
-                </div>
+                <q-btn
+                    class="full-width button-accent"
+                    :label="'Unstake ' + symbol"
+                    color= "primary"
+                    @click="unstake"
+                />
             </div>
         </div>
         <ViewTransaction
@@ -140,12 +138,6 @@ export default defineComponent({
 </template>
 
 <style scoped lang="sass">
-.button-accent
-  background: rgba(108, 35, 255, 1)
-  border-radius: 4px
-  color: $grey-4
-.grey-3
-  color: $grey-3
 .balance-amount:hover
-  color: $primary
+  color: var(--q-primary)
 </style>
