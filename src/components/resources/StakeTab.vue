@@ -23,7 +23,7 @@ export default defineComponent({
         const openTransaction = ref<boolean>(false);
         const stakingAccount = ref<string>(accountStore.accountName || '');
         const accountTotal = computed((): string =>
-            (accountStore.data.core_liquid_balance).toString());
+            (accountStore.data.core_liquid_balance ?? 0).toString());
 
         const accountTotalAsNumber = computed(() => assetToAmount(accountTotal.value));
         const cpuTokens = ref<string>('0');
