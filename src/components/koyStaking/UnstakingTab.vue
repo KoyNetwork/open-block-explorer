@@ -3,42 +3,39 @@ import { defineComponent, ref, computed } from 'vue';
 import ViewTransaction from 'src/components/ViewTransanction.vue';
 import { getChain } from 'src/config/ConfigManager';
 import { API } from '@greymass/eosio';
-import { assetToAmount } from 'src/utils/string-utils';
+import { assetToAmount, formatCurrency } from 'src/utils/string-utils';
+import { QInput } from 'quasar';
 import { useAccountStore } from 'src/stores/account';
 import { useChainStore } from 'src/stores/chain';
 
 const chain = getChain();
 
 export default defineComponent({
-    name: 'StakingTab',
+    name: 'KoyUnstakingTab',
     components: {
         ViewTransaction,
     },
     setup() {
         const accountStore = useAccountStore();
         const chainStore = useChainStore();
-        let openTransaction = ref<boolean>(false);
-        const stakeTokens = ref<string>('');
+        const openTransaction = ref<boolean>(false);
+        const unstakeTokens = ref<string>('');
         const symbol = ref<string>(chain.getSystemToken().symbol);
-        const transactionId = computed((): string => accountStore.TransactionId);
-        const transactionError = computed(() => accountStore.TransactionError);
-        const accountData = computed(() => accountStore.data as API.v1.AccountObject);
-        const rexInfo = computed(() => accountStore.data.rex_info);
-        const rexbal = computed(() => accountStore.rexbal);
-        const maturedRex = computed(() => accountStore.maturedRex);
-        const liquidBalance = computed(
-            () => accountData.value?.core_liquid_balance.value,
+        const unstakeInput = ref<QInput>(null);
+        const transactionId = computed(
+            (): string => accountStore.TransactionId,
         );
-
-        const inputRules = computed((): Array<(data: string) => boolean | string> => [
-            (val: string) => +val >= 0 || 'Value must not be negative',
-            (val: string) => +val <= assetToAmount((accountData.value.core_liquid_balance ?? 0).toString()) || 'Balance too low',
-        ]);
+        const transactionError = computed(
+            () => accountStore.TransactionError,
+        );
+        const accountData = computed(() => accountStore.data as API.v1.AccountObject);
+        const availableToUnstake = computed((): number => accountStore.availableToUnstakeVal);
+        const maxUnlend = computed(() => availableToUnstake.value - .0001);
 
         function formatDec() {
             const precision = chainStore.token.precision;
-            if (stakeTokens.value !== '') {
-                stakeTokens.value = Number(stakeTokens.value)
+            if (unstakeTokens.value !== '') {
+                unstakeTokens.value = Number(unstakeTokens.value)
                     .toLocaleString('en-US', {
                         style: 'decimal',
                         maximumFractionDigits: precision,
@@ -48,17 +45,14 @@ export default defineComponent({
             }
         }
 
-        async function stake() {
+        async function unstake() {
             void accountStore.resetTransaction();
-            if (
-                stakeTokens.value === '0' ||
-                Number(stakeTokens.value) >=
-                Number(accountData.value.core_liquid_balance.toString())
-            ) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
+            if ((unstakeInput.value as any).hasError) {
                 return;
             }
-            await accountStore.stakeRex({
-                amount: stakeTokens.value,
+            await accountStore.unstakeRex({
+                amount: unstakeTokens.value,
             });
 
             if (localStorage.getItem('autoLogin_' + getChain().getChainId()) !== 'cleos') {
@@ -67,28 +61,29 @@ export default defineComponent({
         }
 
         function setMaxValue() {
-            stakeTokens.value = (
-                assetToAmount(accountData.value.core_liquid_balance.toString())
-            ).toString();
+            unstakeTokens.value = maxUnlend.value.toString();
             void formatDec();
         }
 
         return {
             openTransaction,
-            stakeTokens,
+            unstakeTokens,
+            unstakeInput,
             transactionId,
             transactionError,
-            accountData,
-            rexInfo,
-            rexbal,
-            maturedRex,
-            liquidBalance,
-            symbol,
-            inputRules,
             formatDec,
-            stake,
+            unstake,
             assetToAmount,
+            accountData,
+            // rexInfo,
+            // rexbal,
+            //maturedRex,
+            availableToUnstake,
+            maxUnlend,
+            account: accountStore.account,
+            symbol,
             setMaxValue,
+            formatCurrency,
         };
     },
 });
@@ -100,36 +95,36 @@ export default defineComponent({
     <q-card-section>
         <div class="row q-col-gutter-md">
             <div class="col-12">
-                <div class="row q-mb-md">
+                <div class="row">
                     <div class="row q-pb-sm full-width">
-                        <div class="col-8">{{ `LIQUID ${symbol}` }}</div>
+                        <div class="col-8">AVAILABLE TO UNSTAKE</div>
                         <div class="col-4">
                             <div class="row items-center justify-end q-hoverable cursor-pointer" @click="setMaxValue">
-                                <div class="text-weight-bold text-right balance-amount">{{ `${liquidBalance} AVAILABLE` }}</div>
+                                <div class="text-weight-bold text-right balance-amount">{{ formatCurrency(maxUnlend, 4, symbol) }}</div>
                                 <q-icon class="q-ml-xs" name="info"/>
                                 <q-tooltip>Click to fill full amount</q-tooltip>
                             </div>
                         </div>
                     </div>
                     <q-input
-                        v-model="stakeTokens"
-                        dense
-                        dark
-                        class="full-width"
+                        ref="unstakeInput"
+                        v-model="unstakeTokens"
                         standout="bg-deep-purple-2 text-white"
                         placeholder='0'
                         :lazy-rules='true'
-                        :rules="inputRules"
+                        :rules="[ val => val >= 0  && val < availableToUnstake || 'Invalid amount.' ]"
                         type="text"
+                        dense
+                        dark
                         @blur='formatDec'
                     />
                 </div>
                 <div class="row">
                     <q-btn
                         class="full-width button-accent"
-                        :label='"Stake " + symbol'
+                        :label="'Unstake ' + symbol"
                         flat
-                        @click="stake"
+                        @click="unstake"
                     />
                 </div>
             </div>

@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, ref, computed } from 'vue';
+import { defineComponent, ref, computed, onMounted } from 'vue';
 import ViewTransaction from 'src/components/ViewTransanction.vue';
 import { getChain } from 'src/config/ConfigManager';
 import { API } from '@greymass/eosio';
@@ -10,7 +10,7 @@ import { useChainStore } from 'src/stores/chain';
 const chain = getChain();
 
 export default defineComponent({
-    name: 'StakingTab',
+    name: 'KoyStakingTab',
     components: {
         ViewTransaction,
     },
@@ -23,16 +23,16 @@ export default defineComponent({
         const transactionId = computed((): string => accountStore.TransactionId);
         const transactionError = computed(() => accountStore.TransactionError);
         const accountData = computed(() => accountStore.data as API.v1.AccountObject);
-        const rexInfo = computed(() => accountStore.data.rex_info);
-        const rexbal = computed(() => accountStore.rexbal);
-        const maturedRex = computed(() => accountStore.maturedRex);
+        const accountName = computed((): string => accountStore.accountName);
+
+        const liquidValue = computed((): number => accountStore.liquidValue);
         const liquidBalance = computed(
-            () => accountData.value?.core_liquid_balance.value,
+            () => accountData.value?.core_liquid_balance?.value ?? liquidValue.value,
         );
 
         const inputRules = computed((): Array<(data: string) => boolean | string> => [
             (val: string) => +val >= 0 || 'Value must not be negative',
-            (val: string) => +val <= assetToAmount((accountData.value.core_liquid_balance ?? 0).toString()) || 'Balance too low',
+            (val: string) => +val <= liquidBalance.value || 'Balance too low',
         ]);
 
         function formatDec() {
@@ -52,8 +52,7 @@ export default defineComponent({
             void accountStore.resetTransaction();
             if (
                 stakeTokens.value === '0' ||
-                Number(stakeTokens.value) >=
-                Number(accountData.value.core_liquid_balance.toString())
+                Number(stakeTokens.value) >= liquidBalance.value
             ) {
                 return;
             }
@@ -67,11 +66,15 @@ export default defineComponent({
         }
 
         function setMaxValue() {
-            stakeTokens.value = (
-                assetToAmount(accountData.value.core_liquid_balance.toString())
-            ).toString();
+            stakeTokens.value = liquidBalance.value.toString();
             void formatDec();
         }
+
+        onMounted(async () => {
+            if (!accountStore.account.data.core_liquid_balance) {
+                await accountStore.updateKoyStakedData({ account: accountName.value });
+            }
+        });
 
         return {
             openTransaction,
@@ -79,9 +82,6 @@ export default defineComponent({
             transactionId,
             transactionError,
             accountData,
-            rexInfo,
-            rexbal,
-            maturedRex,
             liquidBalance,
             symbol,
             inputRules,
@@ -129,6 +129,7 @@ export default defineComponent({
                         class="full-width button-accent"
                         :label='"Stake " + symbol'
                         flat
+                        disable
                         @click="stake"
                     />
                 </div>

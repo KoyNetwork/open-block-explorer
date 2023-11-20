@@ -1,13 +1,10 @@
 <script lang="ts">
 import { computed, defineComponent, PropType, ref } from 'vue';
 import { Token } from 'src/types';
-import StakingInfo from 'src/components/staking/StakingInfo.vue';
-import StakeFromResources from 'src/components/staking/StakeFromResources.vue';
-import ProcessingTab from 'src/components/staking/ProcessingTab.vue';
-import StakingTab from 'src/components/staking/StakingTab.vue';
-import UnstakingTab from 'src/components/staking/UnstakingTab.vue';
-import HistoryTab from 'src/components/staking/HistoryTab.vue';
-import SavingsTab from 'src/components/staking/SavingsTab.vue';
+import StakingInfo from 'src/components/koyStaking/StakingInfo.vue';
+import StakingTab from 'src/components/koyStaking/StakingTab.vue';
+import UnstakingTab from 'src/components/koyStaking/UnstakingTab.vue';
+import HistoryTab from 'src/components/koyStaking/HistoryTab.vue';
 import { getChain } from 'src/config/ConfigManager';
 import { API } from '@greymass/eosio';
 import { formatCurrency } from 'src/utils/string-utils';
@@ -17,15 +14,12 @@ import { useAccountStore } from 'src/stores/account';
 const symbol = getChain().getSystemToken().symbol;
 
 export default defineComponent({
-    name: 'StakingDialog',
+    name: 'KoyStakingDialog',
     components: {
         StakingInfo,
-        StakeFromResources,
-        ProcessingTab,
         StakingTab,
         UnstakingTab,
         HistoryTab,
-        SavingsTab,
     },
     data() {
         return {
@@ -75,7 +69,7 @@ export default defineComponent({
             withdrawRexFund,
             prettyRexFund,
             accountStore,
-            account: computed(() => accountStore.account.accountName),
+            account: computed(() => accountStore.accountName),
         };
     },
     computed: {
@@ -130,13 +124,7 @@ export default defineComponent({
         },
     },
     async mounted() {
-        // try {
-        //     const apyValue = await this.$api.getApy();
-        //     this.apy = `${apyValue}%`;
-        // } catch (e) {
-        //     console.error(e);
-        // }
-        // await this.loadAccountData();
+        await this.loadAccountData();
     },
 });
 </script>
@@ -158,8 +146,8 @@ export default defineComponent({
             </div>
             <div class="col-xs-12 col-sm-10 col-md-7 col-lg-7 max-dialog-width">
                 <div class="row q-pl-sm">
-                    <div class="text-h4 q-pb-md inline-block color-grey-3 inline">Staking (REX)</div>
-                    <div class="text-h5 q-pb-md inline-block color-grey-3 inline float-right">APY: {{ apy }}</div>
+                    <div class="text-h4 q-pb-md inline-block color-grey-3 inline">Staking</div>
+                    <!-- <div class="text-h5 q-pb-md inline-block color-grey-3 inline float-right">APY: ??</div> -->
                 </div>
                 <div class="q-pa-sm">
                     <StakingInfo/>
@@ -190,9 +178,6 @@ export default defineComponent({
                         >
                             <q-tab name="stake" label="Stake"/>
                             <q-tab name="unstake" label="Unstake"/>
-                            <q-tab name="stakecpunet" label="Stake from CPU/NET"/>
-                            <q-tab name="savings" label="Savings"/>
-                            <q-tab name="maturing" label="Maturing"/>
                             <q-tab name="history" label="History"/>
                         </q-tabs>
                         <q-separator color="grey-8"/>
@@ -202,15 +187,6 @@ export default defineComponent({
                             </q-tab-panel>
                             <q-tab-panel name="unstake">
                                 <UnstakingTab/>
-                            </q-tab-panel>
-                            <q-tab-panel name="stakecpunet">
-                                <StakeFromResources/>
-                            </q-tab-panel>
-                            <q-tab-panel name="savings">
-                                <SavingsTab/>
-                            </q-tab-panel>
-                            <q-tab-panel name="maturing">
-                                <ProcessingTab/>
                             </q-tab-panel>
                             <q-tab-panel name="history">
                                 <HistoryTab/>

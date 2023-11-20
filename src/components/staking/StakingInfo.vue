@@ -1,43 +1,29 @@
 <script lang="ts">
-import { defineComponent, ref, computed, onMounted } from 'vue';
+import { defineComponent, ref, computed } from 'vue';
+import { getChain } from 'src/config/ConfigManager';
 import { API } from '@greymass/eosio';
 import { Token } from 'src/types';
 import { useChainStore } from 'src/stores/chain';
 import { useAccountStore } from 'src/stores/account';
-import { formatCurrency } from 'src/utils/string-utils';
-import ConfigManager from 'src/config/ConfigManager';
+
+const chain = getChain();
 
 export default defineComponent({
     name: 'StakingInfo',
     setup() {
         const chainStore = useChainStore();
         const accountStore = useAccountStore();
-        const symbol = computed(() => ConfigManager.get().getCurrentChain().getSystemToken().symbol);
+        const symbol = ref<string>(chain.getSystemToken().symbol);
         const stakingAccount = ref<string>('');
         const total = ref<string>('0');
         const token = computed((): Token => chainStore.token);
         const accountData = computed(() => accountStore.data as API.v1.AccountObject);
-        const accountName = computed((): string => accountStore.accountName);
-        const liquidValue = computed((): number => accountStore.liquidValue);
-        const liquidBalance = computed(() => accountData.value.core_liquid_balance ?? liquidValue);
+        const liquidBalance = computed(() => accountData.value.core_liquid_balance);
         const rexInfo = computed(() => accountData.value.rex_info);
         const coreRexBalance = computed(() => accountStore.coreRexBalance);
         const maturingRex = computed(() => accountStore.maturingRex);
         const maturedRex = computed(() => accountStore.maturedRex);
         const rexSavings = computed(() => accountStore.savingsRex);
-        const precision = computed(() => ConfigManager.get().getCurrentChain().getSystemToken().precision);
-        const stakedValue = computed(() => formatCurrency(accountStore.stakedBal, precision.value, symbol.value));
-
-
-        const withdrawSpeed = computed(() => accountStore.withdrawSpeedVal);
-        const lastUnstake = computed(() => accountStore.lastUnstakeTime);
-        const availableToUnstake = computed(() => formatCurrency(accountStore.availableToUnstakeVal, 4, symbol.value));
-
-        onMounted(async () => {
-            if (!accountStore.data.core_liquid_balance) {
-                await accountStore.updateKoyStakedData({ account: accountName.value });
-            }
-        });
 
         return {
             symbol,
@@ -51,10 +37,6 @@ export default defineComponent({
             coreRexBalance,
             maturedRex,
             rexSavings,
-            stakedValue,
-            withdrawSpeed,
-            lastUnstake,
-            availableToUnstake,
         };
     },
 });
@@ -75,21 +57,21 @@ export default defineComponent({
             <div class="col-xs-12 col-sm-6 q-px-lg">
                 <div class="row">
                     <div class="col-7">{{ `TOTAL ${symbol} STAKED` }}</div>
-                    <div class="col-5 text-right text-weight-bold">{{stakedValue}}</div>
+                    <div class="col-5 text-right text-weight-bold">{{coreRexBalance}}</div>
                 </div>
                 <div class="row q-pt-sm">
-                    <div class="col-7">WITHDRAW SPEED</div>
-                    <div class="col-5 text-right text-weight-bold">{{ withdrawSpeed }}</div>
+                    <div class="col-7">SAVINGS</div>
+                    <div class="col-5 text-right text-weight-bold">{{rexSavings}}</div>
                 </div>
             </div>
             <div class="col-xs-12 col-sm-6 q-px-lg">
                 <div class="row">
-                    <div class="col-7">AVAILABLE TO UNSTAKE</div>
-                    <div class="col-5 text-right text-weight-bold">{{ availableToUnstake }}</div>
+                    <div class="col-7">MATURED</div>
+                    <div class="col-5 text-right text-weight-bold">{{maturedRex}}</div>
                 </div>
                 <div class="row q-pt-sm">
-                    <div class="col-7">LAST UNSTAKE</div>
-                    <div class="col-5 text-right text-weight-bold">{{ lastUnstake.toDateString() }}</div>
+                    <div class="col-7">MATURING</div>
+                    <div class="col-5 text-right text-weight-bold">{{maturingRex}}</div>
                 </div>
             </div>
         </div>

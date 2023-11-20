@@ -5,6 +5,7 @@ import PercentCircle from 'src/components/PercentCircle.vue';
 import SendDialog from 'src/components/SendDialog.vue';
 import ResourcesDialog from 'src/components/resources/ResourcesDialog.vue';
 import StakingDialog from 'src/components/staking/StakingDialog.vue';
+import KoyStakingDialog from 'src/components/koyStaking/StakingDialog.vue';
 import DateField from 'src/components/DateField.vue';
 import { date, useQuasar, copyToClipboard } from 'quasar';
 import { getChain } from 'src/config/ConfigManager';
@@ -29,6 +30,7 @@ export default defineComponent({
         ResourcesDialog,
         DateField,
         StakingDialog,
+        KoyStakingDialog,
     },
     props: {
         account: {
@@ -45,6 +47,8 @@ export default defineComponent({
         const profileStore = useProfileStore();
 
         const accountPageSettings = computed((): AccountPageSettings => ConfigManager.get().getCurrentChain().getUiCustomization().accountPageSettings);
+
+        const isKoyChain = computed((): boolean => chain.getName() === 'koyn' || chain.getName() === 'koyn-testnet');
 
         const createTime = ref<string>('2019-01-01T00:00:00.000');
         const createTransaction = ref<string>('');
@@ -89,6 +93,7 @@ export default defineComponent({
         const openSendDialog = ref<boolean>(false);
         const openResourcesDialog = ref<boolean>(false);
         const openStakingDialog = ref<boolean>(false);
+        const openKoyStakingDialog = ref<boolean>(false);
 
         const accountData = ref<API.v1.AccountObject>();
         const availableTokens = ref<Token[]>([]);
@@ -409,6 +414,7 @@ export default defineComponent({
 
         return {
             accountPageSettings,
+            isKoyChain,
             MICRO_UNIT,
             KILO_UNIT,
             stakedCPU,
@@ -445,6 +451,7 @@ export default defineComponent({
             openSendDialog,
             openResourcesDialog,
             openStakingDialog,
+            openKoyStakingDialog,
             delegatedByOthers,
             delegatedToOthers,
             isAccount,
@@ -563,16 +570,25 @@ export default defineComponent({
                         @click="openResourcesDialog = true"
                     />
                 </div>
-                <div v-if="isAccount" class="col-3">
+                <div v-if="isAccount && !accountPageSettings.hideRexControl" class="col-3">
                     <q-btn
                         :disable="tokensLoading || isLoading"
-                        :label='tokensLoading ? "Loading..." : "Staking"'
+                        :label='tokensLoading ? "Loading..." : "Staking (REX)"'
                         class="ellipsis full-width"
                         color="primary"
                         @click="openStakingDialog = true"
                     />
                 </div>
-                <div>
+                <div v-if="isAccount && isKoyChain" class="col-3">
+                    <q-btn
+                        :disable="tokensLoading || isLoading"
+                        :label='tokensLoading ? "Loading..." : "Staking"'
+                        class="ellipsis full-width"
+                        color="primary"
+                        @click="openKoyStakingDialog = true"
+                    />
+                </div>
+                <div v-if="isAccount && isKoyChain">
                     <q-btn
                         :disable="tokensLoading || isLoading"
                         :label='tokensLoading ? "Loading..." : "Claim"'
@@ -672,6 +688,10 @@ export default defineComponent({
             />
             <StakingDialog
                 v-model="openStakingDialog"
+                :availableTokens="availableTokens"
+            />
+            <KoyStakingDialog
+                v-model="openKoyStakingDialog"
                 :availableTokens="availableTokens"
             />
         </div>

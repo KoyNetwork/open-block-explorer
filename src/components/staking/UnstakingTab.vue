@@ -3,7 +3,7 @@ import { defineComponent, ref, computed } from 'vue';
 import ViewTransaction from 'src/components/ViewTransanction.vue';
 import { getChain } from 'src/config/ConfigManager';
 import { API } from '@greymass/eosio';
-import { assetToAmount, formatCurrency } from 'src/utils/string-utils';
+import { assetToAmount } from 'src/utils/string-utils';
 import { QInput } from 'quasar';
 import { useAccountStore } from 'src/stores/account';
 import { useChainStore } from 'src/stores/chain';
@@ -29,11 +29,10 @@ export default defineComponent({
             () => accountStore.TransactionError,
         );
         const accountData = computed(() => accountStore.data as API.v1.AccountObject);
-        // const rexInfo = computed(() => accountStore.data.rex_info);
-        // const rexbal = computed(() => accountStore.rexbal);
-        // const maturedRex = computed(() => accountStore.maturedRex);
-        const availableToUnstake = computed((): number => accountStore.availableToUnstakeVal);
-        const maxUnlend = computed(() => availableToUnstake.value - .0001);
+        const rexInfo = computed(() => accountStore.data.rex_info);
+        const rexbal = computed(() => accountStore.rexbal);
+        const maturedRex = computed(() => accountStore.maturedRex);
+        const maxUnlend = computed(() => assetToAmount(maturedRex.value) - .0001);
 
         function formatDec() {
             const precision = chainStore.token.precision;
@@ -78,15 +77,12 @@ export default defineComponent({
             unstake,
             assetToAmount,
             accountData,
-            // rexInfo,
-            // rexbal,
-            //maturedRex,
-            availableToUnstake,
+            rexInfo,
+            rexbal,
+            maturedRex,
             maxUnlend,
-            account: accountStore.account,
             symbol,
             setMaxValue,
-            formatCurrency,
         };
     },
 });
@@ -100,10 +96,10 @@ export default defineComponent({
             <div class="col-12">
                 <div class="row">
                     <div class="row q-pb-sm full-width">
-                        <div class="col-8">AVAILABLE TO UNSTAKE</div>
+                        <div class="col-8">{{ `MATURED ${symbol}` }}</div>
                         <div class="col-4">
                             <div class="row items-center justify-end q-hoverable cursor-pointer" @click="setMaxValue">
-                                <div class="text-weight-bold text-right balance-amount">{{ formatCurrency(maxUnlend, 4, symbol) }}</div>
+                                <div class="text-weight-bold text-right balance-amount">{{ maxUnlend }} {{ symbol }}</div>
                                 <q-icon class="q-ml-xs" name="info"/>
                                 <q-tooltip>Click to fill full amount</q-tooltip>
                             </div>
@@ -115,7 +111,7 @@ export default defineComponent({
                         standout="bg-deep-purple-2 text-white"
                         placeholder='0'
                         :lazy-rules='true'
-                        :rules="[ val => val >= 0  && val < availableToUnstake || 'Invalid amount.' ]"
+                        :rules="[ val => val >= 0  && val < assetToAmount(maturedRex)  || 'Invalid amount.' ]"
                         type="text"
                         dense
                         dark
