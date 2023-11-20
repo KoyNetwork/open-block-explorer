@@ -184,7 +184,7 @@ export default defineComponent({
                 <div class="row">
                     <q-card-section>
                         <img class="send-img q-pr-md" src="~assets/send.svg">
-                        <div class="text-h4 q-pb-md inline-block color-grey-3">Send Tokens</div>
+                        <div class="text-h4 q-pb-md inline-block color-white">Send Tokens</div>
                     </q-card-section>
                 </div>
                 <div v-if="transactionForm" class="transaction-form text-grey-3 text-weight-light">
@@ -260,7 +260,7 @@ export default defineComponent({
                                 <q-btn
                                     class="full-width button-accent"
                                     label="Confirm"
-                                    flat
+                                    color="primary"
                                     :disabled="!validated"
                                     @click="sendTransaction"
                                 />
@@ -309,34 +309,19 @@ export default defineComponent({
 <style lang="sass" scoped>
 .transaction-result
     color: white
-
-
+.q-dialog
+    background: var(--q-dark)
 .sendCard
-  color: $grey-6
-  background: radial-gradient(circle at 48% 100%, rgba(108, 35, 255, 1) 0%, rgba(84, 0, 253, 1) 20%, rgba(2, 27, 100, 1) 92%)
+  background-image: linear-gradient(to right, var(--q-color-background), var(--q-color-background)), var(--q-color-background-gradient)
   .send-icon
     padding-bottom: 30px
-  .button-accent
-    background: rgba(108, 35, 255, 1)
-    border-radius: 4px
-    color: $grey-4
-  .color-grey-3
-    color: $grey-3
-
-.sarrowButton
-  background: rgba($grey-9, 0.1)
 
 .selector-container
   cursor: pointer
-  background: rgba(108, 35, 255, 1)
   border-radius: 4px
   height: 40px
-  margin-top: 1px
-  color: var(--q-dark)
   &:hover
-    background: rgba($grey-4, 0.3)
-    border-color: $grey-1
-    border-radius: 4px
+    background: rgba($grey-4, 0.2)
   .arrowButton
     color: $grey-4
 
@@ -350,5 +335,5 @@ export default defineComponent({
   height: 35px !important
 
 .balance-amount:hover
-  color: $primary
+  color: var(--q-primary)
 </style>
