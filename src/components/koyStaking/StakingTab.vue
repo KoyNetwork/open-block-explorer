@@ -56,7 +56,7 @@ export default defineComponent({
             ) {
                 return;
             }
-            await accountStore.stakeRex({
+            await accountStore.stakeKoy({
                 amount: stakeTokens.value,
             });
 

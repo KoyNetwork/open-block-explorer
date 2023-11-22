@@ -7,7 +7,6 @@ import UnstakingTab from 'src/components/koyStaking/UnstakingTab.vue';
 import HistoryTab from 'src/components/koyStaking/HistoryTab.vue';
 import { getChain } from 'src/config/ConfigManager';
 import { API } from '@greymass/eosio';
-import { formatCurrency } from 'src/utils/string-utils';
 import { useChainStore } from 'src/stores/chain';
 import { useAccountStore } from 'src/stores/account';
 
@@ -42,19 +41,9 @@ export default defineComponent({
     setup() {
         const accountStore = useAccountStore();
         const chainStore = useChainStore();
-        const rexfund = computed(() => accountStore.rexfund || 0);
         const symbol = computed(() => chainStore.token.symbol);
         const transactionId = ref<string>(null);
         const transactionError = ref<string>(null);
-
-        const withdrawRexFund = async () => {
-            await accountStore.unstakeRexFund({ amount: rexfund.value });
-            void accountStore.updateRexData({
-                account: accountStore.accountName,
-            });
-        };
-
-        const prettyRexFund = computed(() => formatCurrency(rexfund.value, 4, symbol.value));
 
         return {
             openCoinDialog: ref<boolean>(false),
@@ -62,56 +51,18 @@ export default defineComponent({
             sendAmount: ref<string>('0'),
             memo: ref<string>(''),
             tab: ref('stake'),
-            rexfund,
             symbol,
             transactionError,
             transactionId,
-            withdrawRexFund,
-            prettyRexFund,
             accountStore,
             account: computed(() => accountStore.accountName),
         };
     },
-    computed: {
-        transactionForm(): boolean {
-            return !(this.transactionError || this.transactionId);
-        },
-    },
     methods: {
-        async sendTransaction(): Promise<void> {
-            const actionAccount = this.sendToken.contract;
-            const data = {
-                from: this.account,
-                to: this.recievingAccount,
-                quantity: `${this.sendAmount} ${this.sendToken.symbol}`,
-                memo: this.memo,
-            };
-            try {
-                this.transactionId = (
-                    await this.accountStore.sendAction({
-                        account: actionAccount,
-                        data,
-                        name: 'transfer',
-                    })
-                ).transactionId;
-            } catch (e) {
-                this.transactionError = e as string;
-            }
-        },
         setDefaults() {
             if (this.availableTokens.length > 0) {
                 this.sendToken = this.availableTokens.find(token => token.symbol === this.sendToken.symbol);
             }
-        },
-        updateSelectedCoin(token: Token): void {
-            this.sendToken = token;
-        },
-        async navToTransaction() {
-            await this.$router.push({
-                name: 'transaction',
-                params: { transaction: this.transactionId },
-            });
-            this.$router.go(0);
         },
         async loadAccountData(): Promise<void> {
             let data: API.v1.AccountObject;
@@ -147,23 +98,9 @@ export default defineComponent({
             <div class="col-xs-12 col-sm-10 col-md-7 col-lg-7 max-dialog-width">
                 <div class="row q-pl-sm">
                     <div class="text-h4 q-pb-md inline-block color-grey-3 inline">Staking</div>
-                    <!-- <div class="text-h5 q-pb-md inline-block color-grey-3 inline float-right">APY: ??</div> -->
                 </div>
                 <div class="q-pa-sm">
                     <StakingInfo/>
-                    <div v-if="rexfund > 0" class="q-pt-lg q-pl-lg">
-                        <div class="row q-col-gutter-md items-center">
-                            <div class="col-auto text-h6 text-white">REX fund: {{ prettyRexFund }}</div>
-                            <div class="col-auto">
-                                <q-btn
-                                    class="full-width"
-                                    label="Withdraw"
-                                    flat
-                                    @click="withdrawRexFund"
-                                />
-                            </div>
-                        </div>
-                    </div>
                     <div class="q-pt-lg text-grey-3 text-weight-light">
                         <q-tabs
                             v-model="tab"

@@ -47,11 +47,12 @@ export default defineComponent({
 
         async function unstake() {
             void accountStore.resetTransaction();
+            console.log(unstakeInput.value);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
             if ((unstakeInput.value as any).hasError) {
                 return;
             }
-            await accountStore.unstakeRex({
+            await accountStore.unstakeKoy({
                 amount: unstakeTokens.value,
             });
 
@@ -75,9 +76,6 @@ export default defineComponent({
             unstake,
             assetToAmount,
             accountData,
-            // rexInfo,
-            // rexbal,
-            //maturedRex,
             availableToUnstake,
             maxUnlend,
             account: accountStore.account,
