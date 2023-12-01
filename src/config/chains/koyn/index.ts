@@ -33,12 +33,7 @@ const HYPERION_ENDPOINT = 'https://hyperion.koy.network';
 const RPC_ENDPOINT = {
     protocol: 'https',
     host: 'mainnet.koy.network',
-    port: 443,
-};
-const FUEL_RPC_ENDPOINT = {
-    protocol: 'https',
-    host: 'mainnet.koy.network',
-    port: 443,
+    port: 9876,
 };
 const API_ENDPOINT = 'https://mainnet.koy.network/v1';
 const S3_PRODUCER_BUCKET = '';
@@ -90,7 +85,7 @@ export default class Koyn extends BaseChain {
         return RPC_ENDPOINT;
     }
     getFuelRPCEndpoint(): RpcEndpoint | null {
-        return FUEL_RPC_ENDPOINT;
+        return null;
     }
     getApiEndpoint(): string {
         return API_ENDPOINT;
