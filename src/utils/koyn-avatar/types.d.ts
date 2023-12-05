@@ -5,10 +5,11 @@
  */
 export interface Options {
     face?: ('square')[];
-    misc?: ('hands' | 'halo' | 'bandage')[];
+    misc?: ('bindi' | 'hands' | 'halo' | 'bandage')[];
     miscProbability?: number;
     mouth?: ('fangs' | 'tongueUp' | 'sad1' | 'zipper' | 'wavy2' | 'wavy' | 'pursed' | 'teeth' | 'bigO' | 'smallO' | 'wideSmile2' | 'wideSmile' | 'tongue4' | 'largeChin' | 'oval' | 'smileLg' | 'meh2' | 'confounded' | 'happy' | 'sad2' | 'yen' | 'pound' | 'mildySad' | 'tongue1' | 'toxicMask' | 'meh' | 'tongue2' | 'smile1' | 'blush1')[];
-    eyes?: ('horns' | 'eyebrows6' | 'eyebrows5' | 'eyebrows4' | 'round' | 'sad' | 'relaxed' | 'dizzy' | 'winkWavy' | 'surprise' | 'dead' | 'babySad' | 'coldSweat' | 'wink' | 'questioning' | 'dots' | 'squinty' | 'happy' | 'eyepatch' | 'alien' | 'redLaser2' | 'glassesShade2' | 'glassesXl' | 'underwater' | 'winter' | 'sportGlasses' | 'glassesShadeRect' | 'squinting' | 'kOYN' | 'pinkGlasses2' | 'pinkGlasses' | 'euro' | 'dollarSign' | 'anim1' | 'btc1' | 'happy1' | 'redLaser' | 'baby' | 'btc2' | 'bigEyes' | 'bindiDot1' | 'bindiDot2')[];
+    eyes?: ('horns' | 'eyebrows6' | 'eyebrows5' | 'eyebrows4' | 'round' | 'sad' | 'relaxed' | 'dizzy' | 'winkWavy' | 'surprise' | 'dead' | 'babySad' | 'coldSweat' | 'wink' | 'questioning' | 'dots' | 'squinty' | 'happy' | 'eyepatch' | 'alien' | 'redLaser2' | 'glassesShade2' | 'glassesXl' | 'underwater' | 'winter' | 'sportGlasses' | 'glassesShadeRect' | 'squinting' | 'kOYN' | 'pinkGlasses2' | 'pinkGlasses' | 'euro' | 'dollarSign' | 'anim1' | 'btc1' | 'happy1' | 'redLaser' | 'baby' | 'btc2' | 'bigEyes' | 'eyebrows1' | 'eyebrows2')[];
+    faceColor?: string[];
 }
 export type ColorPickCollection = Record<string, string>;
 export type ComponentGroup = Record<string, ComponentGroupItem>;

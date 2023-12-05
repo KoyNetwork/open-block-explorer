@@ -9,6 +9,14 @@ import {
     getRexHistoryAsset,
 } from 'src/utils/string-utils';
 
+jest.mock('src/config/ConfigManager', () => ({
+    getChain: () => ({
+        getSystemToken: () => ({
+            symbol : 'KOYN',
+        }),
+    }),
+}));
+
 describe('string-utils utility functions', () => {
     describe('isValidAccount', () => {
         it('returns true for accounts with lowercase letters, numbers 1-5, containing non-terminating periods up to 13 characters', () => {
