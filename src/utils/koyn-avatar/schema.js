@@ -51,8 +51,8 @@ export const schema = {
                     "baby",
                     "btc2",
                     "bigEyes",
-                    "bindiDot1",
-                    "bindiDot2"
+                    "eyebrows1",
+                    "eyebrows2"
                 ]
             },
             "default": [
@@ -96,8 +96,8 @@ export const schema = {
                 "baby",
                 "btc2",
                 "bigEyes",
-                "bindiDot1",
-                "bindiDot2"
+                "eyebrows1",
+                "eyebrows2"
             ]
         },
         "face": {
@@ -112,17 +112,44 @@ export const schema = {
                 "square"
             ]
         },
+        "faceColor": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "pattern": "^(transparent|[a-fA-F0-9]{6})$"
+            },
+            "default": [
+                "f1a12a",
+                "e8da16",
+                "f0c146",
+                "4369e8",
+                "98d4eb",
+                "423fec",
+                "42d3f3",
+                "e72ac7",
+                "edb7c0",
+                "c9388f",
+                "79cd6c",
+                "32a985",
+                "afe39c",
+                "d9644a",
+                "a78ddd",
+                "8448e5"
+            ]
+        },
         "misc": {
             "type": "array",
             "items": {
                 "type": "string",
                 "enum": [
+                    "bindi",
                     "hands",
                     "halo",
                     "bandage"
                 ]
             },
             "default": [
+                "bindi",
                 "hands",
                 "halo",
                 "bandage"
@@ -132,7 +159,7 @@ export const schema = {
             "type": "integer",
             "minimum": 0,
             "maximum": 100,
-            "default": 8
+            "default": 40
         },
         "mouth": {
             "type": "array",
