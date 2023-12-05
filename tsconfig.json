@@ -14,6 +14,7 @@
   "exclude": [
     "node_modules",
     "public",
-    "boot"
+    "boot",
+    "src/utils/koyn-avatar",
   ]
 }
