@@ -3,10 +3,11 @@ import { defineComponent, ref, watch, toRefs, computed, onUpdated, toRaw } from 
 import { TransferData } from 'src/types';
 import AccountFormat from 'src/components/transaction/AccountFormat.vue';
 import PrettyPayload from 'src/components/transaction/PrettyPayload.vue';
+import NumberFormat from 'src/components/NumberFormat.vue';
 
 export default defineComponent({
     name: 'DataFormat',
-    components: { AccountFormat, PrettyPayload },
+    components: { AccountFormat, PrettyPayload, NumberFormat },
     props: {
         actionName: {
             type: String,
@@ -75,6 +76,11 @@ export default defineComponent({
             return compareJsonObjects(toRaw(currentData.value), data) ? currentData.value : data;
         }
 
+        function formatQuantity(quantity: string) : string {
+            // Removes symbol from string
+            return quantity.split(' ')[0];
+        }
+
         function updateOverflowing() {
             isOverflowing.value = (dataBox.value?.clientHeight ?? 0) > maxHeight;
         }
@@ -101,6 +107,7 @@ export default defineComponent({
             showOverflow,
             toggleOverflow,
             maxHeightStyle,
+            formatQuantity,
         };
     },
 });
@@ -120,7 +127,7 @@ export default defineComponent({
             <span class="text-bold">
                 <AccountFormat :account="transferData.to" type="account">&nbsp;</AccountFormat>
             </span>
-            <span class="text-bold q-mt-none">{{ ' ' + transferData.quantity }}</span>
+            <span class="text-bold q-mt-none"><NumberFormat :valueToFormat="formatQuantity(String(transferData.quantity))"/></span>
         </div>
         <div class="row ">
             <div class="text-weight-bold">
