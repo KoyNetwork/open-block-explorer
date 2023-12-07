@@ -6,6 +6,31 @@
 export const schema = {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "properties": {
+        "backgroundColor": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "pattern": "^(transparent|[a-fA-F0-9]{6})$"
+            },
+            "default": [
+                "f1a12a",
+                "e8da16",
+                "f0c146",
+                "4369e8",
+                "98d4eb",
+                "423fec",
+                "42d3f3",
+                "e72ac7",
+                "edb7c0",
+                "c9388f",
+                "79cd6c",
+                "32a985",
+                "afe39c",
+                "d9644a",
+                "a78ddd",
+                "8448e5"
+            ]
+        },
         "eyes": {
             "type": "array",
             "items": {
@@ -52,7 +77,8 @@ export const schema = {
                     "btc2",
                     "bigEyes",
                     "eyebrows1",
-                    "eyebrows2"
+                    "eyebrows2",
+                    "eyebrows3"
                 ]
             },
             "default": [
@@ -97,7 +123,8 @@ export const schema = {
                 "btc2",
                 "bigEyes",
                 "eyebrows1",
-                "eyebrows2"
+                "eyebrows2",
+                "eyebrows3"
             ]
         },
         "face": {
@@ -142,24 +169,52 @@ export const schema = {
             "items": {
                 "type": "string",
                 "enum": [
+                    "freckles1",
                     "bindi",
-                    "hands",
                     "halo",
-                    "bandage"
+                    "bandage",
+                    "freckles2",
+                    "freckles3",
+                    "freckles4"
                 ]
             },
             "default": [
+                "freckles1",
                 "bindi",
-                "hands",
                 "halo",
-                "bandage"
+                "bandage",
+                "freckles2",
+                "freckles3",
+                "freckles4"
             ]
+        },
+        "misc2": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "enum": [
+                    "palms",
+                    "frame2",
+                    "frame1"
+                ]
+            },
+            "default": [
+                "palms",
+                "frame2",
+                "frame1"
+            ]
+        },
+        "misc2Probability": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "default": 15
         },
         "miscProbability": {
             "type": "integer",
             "minimum": 0,
             "maximum": 100,
-            "default": 40
+            "default": 15
         },
         "mouth": {
             "type": "array",
@@ -194,7 +249,8 @@ export const schema = {
                     "meh",
                     "tongue2",
                     "smile1",
-                    "blush1"
+                    "blush1",
+                    "subtleSmile"
                 ]
             },
             "default": [
@@ -226,7 +282,8 @@ export const schema = {
                 "meh",
                 "tongue2",
                 "smile1",
-                "blush1"
+                "blush1",
+                "subtleSmile"
             ]
         }
     }
