@@ -73,7 +73,7 @@ export default defineComponent({
         };
     },
     async mounted() {
-        await this.chainStore.updateBpList();
+        this.chainStore.updateBpList();
 
         // ---- Map Styles ----
         const style = new Style({
