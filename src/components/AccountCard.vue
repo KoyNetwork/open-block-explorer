@@ -404,11 +404,15 @@ export default defineComponent({
         onMounted(async () => {
             usdPrice.value = await chain.getUsdPrice();
             await loadAccountData();
-            await accountStore.updateRexData({
-                account: props.account,
-            });
+            if (!accountPageSettings.value.hideRexInfo) {
+                await accountStore.updateRexData({
+                    account: props.account,
+                });
+            }
             loadSystemToken();
-            void chainStore.updateRamPrice();
+            if (!accountPageSettings.value.hideRamInfo) {
+                void chainStore.updateRamPrice();
+            }
         });
 
         watch(
@@ -602,51 +606,49 @@ export default defineComponent({
                         <td v-if="isLoading" class="text-right total-amount total-loading-spinner">
                             <q-spinner color="white" size="1.5em"/>
                         </td>
-                        <td v-else class="text-right total-amount">{{ formatAsset(totalTokens) }}</td>
-                    </tr>
+                        <td class="text-right"><NumberFormat class="total-amount" :valueToFormat="totalTokens"/></td>                    </tr>
                     <tr v-show="!isLoading && totalValueString.length > 0" class="total-row">
                         <td class="text-left"></td>
-                        <td class="text-right total-value">{{ totalValueString }}</td>
-                    </tr>
+                        <td class="text-right"><NumberFormat class="total-value" :valueToFormat="totalValueString"/></td>                    </tr>
                     <tr>
                         <td class="text-left">LIQUID</td>
-                        <td class="text-right">{{ formatAsset(liquidNative) }}</td>
+                        <td class="text-right"><NumberFormat :valueToFormat="liquidNative"/></td>
                     </tr>
                     <tr v-if="!accountPageSettings.hideRexInfo">
                         <td class="text-left">REX staked (includes savings)</td>
-                        <td class="text-right">{{ formatAsset(rexStaked) }}</td>
+                        <td class="text-right"><NumberFormat :valueToFormat="rexStaked"/></td>
                     </tr>
                     <tr v-if="!accountPageSettings.hideRexInfo">
                         <td class="text-left">REX liquid deposits</td>
-                        <td class="text-right">{{ formatAsset(rexDeposits) }}</td>
+                        <td class="text-right"><NumberFormat :valueToFormat="rexDeposits"/></td>
                     </tr>
                     <tr v-if="!accountPageSettings.hideCpuInfo">
                         <td class="text-left">STAKED for CPU</td>
-                        <td class="text-right">{{ formatAsset(stakedCPU) }}</td>
+                        <td class="text-right"><NumberFormat :valueToFormat="stakedCPU"/></td>
                     </tr>
                     <tr v-if="!accountPageSettings.hideNetInfo">
                         <td class="text-left">STAKED for NET</td>
-                        <td class="text-right">{{ formatAsset(stakedNET) }}</td>
+                        <td class="text-right"><NumberFormat :valueToFormat="stakedNET"/></td>
                     </tr>
                     <tr v-if="!accountPageSettings.hideRefundingInfo">
                         <td class="text-left">REFUNDING from staking</td>
-                        <td class="text-right">{{ formatAsset(stakedRefund) }}</td>
+                        <td class="text-right"><NumberFormat :valueToFormat="stakedRefund"/></td>
                     </tr>
                     <tr v-if="!accountPageSettings.hideDelegatedInfo">
                         <td class="text-left">DELEGATED to others</td>
-                        <td class="text-right">{{ formatAsset(delegatedToOthers) }}</td>
+                        <td class="text-right"><NumberFormat :valueToFormat="delegatedToOthers"/></td>
                     </tr>
                     <tr v-if="!accountPageSettings.hideDelegatedInfo">
                         <td class="text-left">DELEGATED by others</td>
-                        <td class="text-right">{{ formatAsset(delegatedByOthers) }}</td>
+                        <td class="text-right"><NumberFormat :valueToFormat="delegatedByOthers"/></td>
                     </tr>
                     <tr>
                         <td class="text-left">STAKED</td>
-                        <td class="text-right">{{ formatAsset(stakedBal) }}</td>
+                        <td class="text-right"><NumberFormat :valueToFormat="stakedBal"/></td>
                     </tr>
                     <tr>
                         <td class="text-left">UNSTAKED</td>
-                        <td class="text-right">{{ formatAsset(unstakedBal) }}</td>
+                        <td class="text-right"><NumberFormat :valueToFormat="unstakedBal"/></td>
                     </tr>
                 </tbody>
             </thead>
