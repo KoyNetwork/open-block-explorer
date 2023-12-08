@@ -74,7 +74,8 @@ export default defineComponent({
     },
     async mounted() {
         this.chainStore.updateBpList();
-
+        await setTimeout(null, 1000);
+        
         // ---- Map Styles ----
         const style = new Style({
             image: new CircleStyle({
