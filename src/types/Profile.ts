@@ -1,5 +1,8 @@
 export interface Profile {
     account: string;
+    displayName: string;
     avatar: string;
-    //TODO: last updated
+    bio: string;
+    status: string;
+    isVerified: boolean;
 }

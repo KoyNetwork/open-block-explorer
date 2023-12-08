@@ -7,6 +7,7 @@ import ResourcesDialog from 'src/components/resources/ResourcesDialog.vue';
 import StakingDialog from 'src/components/staking/StakingDialog.vue';
 import DateField from 'src/components/DateField.vue';
 import NumberFormat from 'src/components/NumberFormat.vue';
+import VueMarkdown from 'vue-markdown-render';
 import { date, useQuasar, copyToClipboard } from 'quasar';
 import { getChain } from 'src/config/ConfigManager';
 import { api } from 'src/api';
@@ -32,6 +33,7 @@ export default defineComponent({
         DateField,
         StakingDialog,
         NumberFormat,
+        VueMarkdown,
     },
     props: {
         account: {
@@ -90,6 +92,7 @@ export default defineComponent({
         const openStakingDialog = ref<boolean>(false);
 
         const accountData = ref<API.v1.AccountObject>();
+        const profileData = computed(() => profileStore.profile);
         const availableTokens = ref<Token[]>([]);
 
 
@@ -143,6 +146,7 @@ export default defineComponent({
             try {
                 isLoading.value = true;
                 accountData.value = await api.getAccount(props.account);
+                await profileStore.loadProfileInformation({ account: props.account });
                 await loadAccountCreatorInfo();
                 await loadProfile();
                 await loadBalances();
@@ -474,6 +478,7 @@ export default defineComponent({
             formatAsset,
             updateTokenBalances,
             profile,
+            profileData,
         };
     },
 });
@@ -485,41 +490,46 @@ export default defineComponent({
     <q-card v-if="accountExists" class="account-card">
         <q-card-section class="resources-container">
             <div class="inline-section">
-                <div class="items-center justify-center row full-height q-gutter-sm">
-                    <img v-if="profile?.avatar" class="avatar-image" :src="profile.avatar" >
-                    <div class="justify-center column">
-                        <div class="items-center row">
-                            <div class="text-title">{{ account }}</div>
-                            <q-btn
-                                class="float-right"
-                                flat
-                                round
-                                color="white"
-                                icon="content_copy"
-                                size="sm"
-                                @click="copy(account)"
-                            />
+                <div class="items-center justify-center column full-height q-gutter-sm q-mb-md">
+                    <div class="items-center row">
+                        <div class="text-title">{{ account }}</div>
+                        <q-btn
+                            class="float-right"
+                            flat
+                            round
+                            color="white"
+                            icon="content_copy"
+                            size="sm"
+                            @click="copy(account)"
+                        />
+                    </div>
+                    <div v-show="!accountPageSettings.hideCreatedBy">
+                        <div
+                            v-if="creatingAccount && creatingAccount !== '__self__'"
+                            class="text-subtitle"
+                        >
+                            created by
+                            <span>&nbsp;<a @click="loadCreatorAccount">{{ creatingAccount }}</a>&nbsp;</span>
+                            <div>
+                                <DateField :timestamp="createTime" showAge>&nbsp;</DateField>
+                                <q-tooltip>{{createTimeFormat}}</q-tooltip>
+                            </div><a class="q-ml-xs tx-link" @click="loadCreatorTransaction">
+                                <q-icon name="fas fa-link"/></a>
                         </div>
-                        <div v-show="!accountPageSettings.hideCreatedBy">
-                            <div
-                                v-if="creatingAccount && creatingAccount !== '__self__'"
-                                class="text-subtitle"
-                            >
-                                created by
-                                <span>&nbsp;<a @click="loadCreatorAccount">{{ creatingAccount }}</a>&nbsp;</span>
-                                <div>
-                                    <DateField :timestamp="createTime" showAge>&nbsp;</DateField>
-                                    <q-tooltip>{{createTimeFormat}}</q-tooltip>
-                                </div><a class="q-ml-xs tx-link" @click="loadCreatorTransaction">
-                                    <q-icon name="fas fa-link"/></a>
-                            </div>
-                            <div v-else class="text-subtitle">created<span>&nbsp;</span>
-                                <div>
-                                    <DateField :timestamp="createTime" showAge>&nbsp;</DateField>
-                                    <q-tooltip>{{createTimeFormat}}</q-tooltip>
-                                </div>
+                        <div v-else class="text-subtitle">created<span>&nbsp;</span>
+                            <div>
+                                <DateField :timestamp="createTime" showAge>&nbsp;</DateField>
+                                <q-tooltip>{{createTimeFormat}}</q-tooltip>
                             </div>
                         </div>
+                    </div>
+                </div>
+                <div class="items-center justify-center row full-height q-gutter-sm text-body1">
+                    <img v-if="profile?.avatar" class="avatar-image col-4" :src="profile.avatar" >
+                    <div class="justify-center column col-8 q-ml-md">
+                        <VueMarkdown class="text-h5" :source="profileData.displayName" />
+                        <VueMarkdown :source="profileData.status" />
+                        <VueMarkdown :source="profileData.bio" />
                     </div>
                 </div>
                 <q-space/>
