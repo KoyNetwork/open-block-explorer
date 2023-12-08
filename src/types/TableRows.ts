@@ -31,6 +31,18 @@ export interface StakedbalRows {
   rows: Stakedbal[];
 }
 
+export interface ProfileRow {
+  display_name: string;
+  avatar: string;
+  bio: string;
+  status: string;
+  is_verified: string;
+}
+
+export interface ProfileRows {
+  rows: ProfileRow[];
+}
+
 export interface GenericTable {
   rows: unknown[];
 }
