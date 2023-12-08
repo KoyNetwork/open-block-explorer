@@ -137,7 +137,7 @@ export default defineComponent({
 
         let profile = computed(() => profileStore.profiles.get(props.account));
 
-
+        const showProfileData = computed(() => profileData.value.displayName !== '' || profileData.value.status !== '' || profileData.value.bio !== '');
         const setToken = (value: Token) => {
             void chainStore.setToken(value);
         };
@@ -479,6 +479,7 @@ export default defineComponent({
             updateTokenBalances,
             profile,
             profileData,
+            showProfileData,
         };
     },
 });
@@ -526,10 +527,10 @@ export default defineComponent({
                 </div>
                 <div class="items-center justify-center row full-height q-gutter-sm text-body1">
                     <img v-if="profile?.avatar" class="avatar-image col-4" :src="profile.avatar" >
-                    <div class="justify-center column col-8 q-ml-md">
-                        <VueMarkdown class="text-h5" :source="profileData.displayName" />
-                        <VueMarkdown :source="profileData.status" />
-                        <VueMarkdown :source="profileData.bio" />
+                    <div v-show="showProfileData" class="justify-center column col-8 q-ml-md">
+                        <VueMarkdown v-show="profileData.displayName !== ''" class="text-h5" :source="profileData.displayName" />
+                        <VueMarkdown v-show="profileData.status !== ''" :source="profileData.status" />
+                        <VueMarkdown v-show="profileData.bio !== ''" :source="profileData.bio" />
                     </div>
                 </div>
                 <q-space/>
