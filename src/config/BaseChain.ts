@@ -69,6 +69,10 @@ export const baseUiConfiguration: UiCustomization = {
         hideContractsTab: false,
         hideCreatedBy: false,
     },
+    networkPageSettings: {
+        hideMapData: false,
+        hidePriceChart: false,
+    },
 };
 
 export default abstract class BaseChain implements Chain {

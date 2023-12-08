@@ -1,11 +1,12 @@
 <script lang="ts">
-import { defineComponent, onMounted, onBeforeUnmount, ref, watch } from 'vue';
+import { defineComponent, onMounted, onBeforeUnmount, ref, watch, computed } from 'vue';
 import PriceChart from 'components/PriceChart.vue';
 import TransactionsTable from 'components/TransactionsTable.vue';
 import WorldMap from 'components/WorldMap.vue';
 import MapData from 'components/MapData.vue';
 import ConfigManager from 'src/config/ConfigManager';
 import { useChainStore } from 'src/stores/chain';
+import { NetworkPageSettings } from 'src/types/UiCustomization';
 
 enum MapReveal {
     Reveal,
@@ -23,18 +24,22 @@ export default defineComponent({
     },
     setup() {
         const chainStore = useChainStore();
+        const networkPageSettings = computed((): NetworkPageSettings => ConfigManager.get().getCurrentChain().getUiCustomization().networkPageSettings);
+
         const mapDisplay = ConfigManager.get().getCurrentChain().getMapDisplay();
-        const showMap = ref(false);
+        const showMap = ref(true);
         const showMapHint = ref(false);
         const SCROLL_TIMEOUT = 100;
         let mapReveal = ref(MapReveal.None);
         let isScrolling: NodeJS.Timeout;
+
         const toggleMap = () => {
             showMap.value = !showMap.value;
             if (!showMap.value && mapReveal.value !== MapReveal.None) {
                 mapReveal.value = MapReveal.None;
             }
         };
+
         const scrollReveal = () => {
             if (document.documentElement.scrollTop === 0){
                 if (!showMap.value){
@@ -53,6 +58,7 @@ export default defineComponent({
                 mapReveal.value = MapReveal.None;
             }
         };
+
         watch(mapReveal, (val) => {
             if (val === MapReveal.Top){
                 showMapHint.value = true;
@@ -61,15 +67,18 @@ export default defineComponent({
                 }, 2000);
             }
         });
+
         const eventTimeout = function () {
             window.clearTimeout(isScrolling);
             isScrolling = setTimeout(scrollReveal, SCROLL_TIMEOUT);
         };
+
         const keyUpTimeout = function (e: KeyboardEvent) {
             if (e.key === 'ArrowUp'){
                 eventTimeout();
             }
         };
+
         const clearListeners = () => {
             window.removeEventListener('scroll', eventTimeout);
             window.removeEventListener('wheel', eventTimeout);
@@ -96,6 +105,7 @@ export default defineComponent({
             showMap,
             showMapHint,
             toggleMap,
+            networkPageSettings,
         };
     },
 });
@@ -121,17 +131,17 @@ export default defineComponent({
         <div v-if="!showMap" class="items-center arrow-button" >
             <q-icon class="fas fa-chevron-down q-pr-lg chevron" size="17px" />
         </div>
-        <div class="map-hint" :class="{'fade-in' : showMapHint, 'fade-out' : !showMapHint}">(click or scroll to view producer map)</div>
+        <div v-if="!networkPageSettings.hideMapData" class="map-hint" :class="{'fade-in' : showMapHint, 'fade-out' : !showMapHint}">(click or scroll to view producer map)</div>
 
     </div>
-    <div v-if="mapDisplay && showMap" class="col-12 map-data-position overlap-map">
+    <div v-if="!networkPageSettings.hideMapData && mapDisplay && showMap" class="col-12 map-data-position overlap-map">
         <MapData :mapVisible="showMap" />
     </div>
     <div class="container-max-width" :class="{'container-margin' : !showMap}">
-        <div v-if="mapDisplay && !showMap" class="col-12 map-data-position">
+        <div v-if="!networkPageSettings.hideMapData && mapDisplay && !showMap" class="col-12 map-data-position">
             <MapData :mapVisible="showMap" />
         </div>
-        <PriceChart v-if='mapDisplay' class="price-box-position" :class="{'overlap-map' : mapDisplay && showMap}"/>
+        <PriceChart v-if='!networkPageSettings.hidePriceChart && mapDisplay' class="price-box-position" :class="{'overlap-map' : mapDisplay && showMap}"/>
         <TransactionsTable/>
     </div>
 </div>
