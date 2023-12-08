@@ -1,15 +1,13 @@
 import { defineStore } from 'pinia';
-import { BP, GetTableRowsParams, Producer, Token } from 'src/types';
+import { GetTableRowsParams, Producer, Token } from 'src/types';
 import { api } from 'src/api';
-import axios from 'axios';
 import { formatCurrency } from 'src/utils/string-utils';
-import { Chain } from 'src/types/Chain';
-import { getChain } from 'src/config/ConfigManager';
+import { KoyBP } from 'src/types/BP';
 
 
 export interface ChainStateInterface {
     token: Token;
-    bpList: BP[];
+    bpList: KoyBP[];
     producers: Producer[];
     head_block_num: number;
     last_irreversible_block_num: number;
@@ -18,7 +16,7 @@ export interface ChainStateInterface {
     ram_price: string;
 }
 
-const chain: Chain = getChain();
+// const chain: Chain = getChain();
 
 export const useChainStore = defineStore('chain', {
     state: (): ChainStateInterface => ({
@@ -51,7 +49,7 @@ export const useChainStore = defineStore('chain', {
         setPrecision(precision: number) {
             this.token.precision = precision;
         },
-        setBpList(bpList: BP[]) {
+        setBpList(bpList: KoyBP[]) {
             this.bpList = bpList;
         },
         setHead_block_num(hbn: number) {
@@ -72,52 +70,55 @@ export const useChainStore = defineStore('chain', {
         setRamPrice(price: string) {
             this.ram_price = price;
         },
-        async updateBpList() {
-            try {
-                const producerSchedule = (await api.getSchedule()).active.producers;
-                const schedule = producerSchedule.map(el => el.producer_name);
-                this.setProducerSchedule(schedule);
-                const objectList = await axios.get(chain.getS3ProducerBucket());
-                const parser = new DOMParser();
-                const contentsArray = parser
-                    .parseFromString(objectList.data, 'text/xml')
-                    .getElementsByTagName('Contents');
-                const lastEntry = contentsArray[contentsArray.length - 1];
-                const lastKey = lastEntry.childNodes[0].textContent;
-                const producerData: BP[] = (
-            await axios.get(`${chain.getS3ProducerBucket()}/${lastKey}`)
-        ).data as BP[];
-                let producers = (await api.getProducers()).rows;
-                producers = producers.filter(producer => producer.is_active === 1);
-                producers = producers.map((data) => {
-                    const bp = producerData.find(
-                        producer => producer.owner === data.owner,
-                    );
-                    if (bp) {
-                        try {
-                            return {
-                                ...data,
-                                name: bp.org.candidate_name,
-                                location: bp.org.location.name,
-                            };
-                        } catch (error) {
-                            return data;
-                        }
-                    } else {
-                        return {
-                            ...data,
-                            name: data.owner,
-                            location: '',
-                        };
-                    }
-                });
-                producerData.sort((a, b) => b.total_votes - a.total_votes);
-                producers.sort((a, b) => b.total_votes - a.total_votes);
-                this.setProducers(producers);
-                this.setBpList(producerData);
-            } catch (err) {
-                console.error(err);
-            }
+        updateBpList() {
+            this.setBpList([{ owner: 'eosio', location: { name: 'USA', longitude: -122.330280, latitude: 47.603230, country: 'USA' } },
+                { owner: 'p.kenya1', location: { name: 'KEN', longitude: 36.817223, latitude: -1.286389, country: 'KEN' } },
+                { owner: 'p.johan1', location: { name: 'ZAF', longitude: 28.034088, latitude: -26.195246, country: 'ZAF' } }]);
+        //     try {
+        //         const producerSchedule = (await api.getSchedule()).active.producers;
+        //         // const schedule = producerSchedule.map(el => el.producer_name);
+        //         // this.setProducerSchedule(schedule);
+        //         const objectList = await axios.get(chain.getS3ProducerBucket());
+        //         const parser = new DOMParser();
+        //         const contentsArray = parser
+        //             .parseFromString(objectList.data, 'text/xml')
+        //             .getElementsByTagName('Contents');
+        //         const lastEntry = contentsArray[contentsArray.length - 1];
+        //         const lastKey = lastEntry.childNodes[0].textContent;
+        //         const producerData: BP[] = (
+        //     await axios.get(`${chain.getS3ProducerBucket()}/${lastKey}`)
+        // ).data as BP[];
+        //         let producers = (await api.getProducers()).rows;
+        //         producers = producers.filter(producer => producer.is_active === 1);
+        //         producers = producers.map((data) => {
+        //             const bp = producerData.find(
+        //                 producer => producer.owner === data.owner,
+        //             );
+        //             if (bp) {
+        //                 try {
+        //                     return {
+        //                         ...data,
+        //                         name: bp.org.candidate_name,
+        //                         location: bp.org.location.name,
+        //                     };
+        //                 } catch (error) {
+        //                     return data;
+        //                 }
+        //             } else {
+        //                 return {
+        //                     ...data,
+        //                     name: data.owner,
+        //                     location: '',
+        //                 };
+        //             }
+        //         });
+        //         producerData.sort((a, b) => b.total_votes - a.total_votes);
+        //         producers.sort((a, b) => b.total_votes - a.total_votes);
+        //         this.setProducers(producers);
+        //         this.setBpList(producerData);
+        //     } catch (err) {
+        //         console.error(err);
+        //     }
         },
         async updateBlockData() {
             try {

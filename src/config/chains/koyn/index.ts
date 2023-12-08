@@ -37,7 +37,7 @@ const RPC_ENDPOINT = {
 };
 const API_ENDPOINT = 'https://mainnet.koy.network/v1';
 const S3_PRODUCER_BUCKET = '';
-const DISPLAY_MAP = false;
+const DISPLAY_MAP = true;
 const THEME = {
     primary: '#CE1C61',
     secondary: '#82103C',
@@ -47,7 +47,7 @@ const THEME = {
     negative: '#FF0000',
     info: '#90B862',
     warning: '#FFBB69',
-    'color-map': '#CE1C61',
+    'color-map': '#131313',
     'color-background': '#EE05F226',
     'color-background-gradient': 'linear-gradient(132.08deg, rgba(255, 255, 255, 0.325) 0%, rgba(255, 255, 255, 0.1235) 52.08%, rgba(255, 255, 255, 0) 100%)',
     'color-primary-gradient': 'linear-gradient(90deg, #82103C 65%, #492030 100%)',
@@ -150,6 +150,10 @@ export default class Koyn extends BaseChain {
                 hideChildrenTab: true,
                 hideContractsTab: false,
                 hideCreatedBy: true,
+            },
+            networkPageSettings: {
+                hideMapData: true,
+                hidePriceChart: true,
             },
         };
     }
