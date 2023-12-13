@@ -46,7 +46,7 @@ export const schema = {
                     "dizzy",
                     "winkWavy",
                     "surprise",
-                    "dead",
+                    "dead1",
                     "babySad",
                     "coldSweat",
                     "wink",
@@ -78,7 +78,16 @@ export const schema = {
                     "bigEyes",
                     "eyebrows1",
                     "eyebrows2",
-                    "eyebrows3"
+                    "eyebrows3",
+                    "dead2",
+                    "triangle",
+                    "three3",
+                    "three4",
+                    "three5",
+                    "smallerCartoon",
+                    "three1",
+                    "threeGlasses2",
+                    "three2"
                 ]
             },
             "default": [
@@ -92,7 +101,7 @@ export const schema = {
                 "dizzy",
                 "winkWavy",
                 "surprise",
-                "dead",
+                "dead1",
                 "babySad",
                 "coldSweat",
                 "wink",
@@ -124,7 +133,16 @@ export const schema = {
                 "bigEyes",
                 "eyebrows1",
                 "eyebrows2",
-                "eyebrows3"
+                "eyebrows3",
+                "dead2",
+                "triangle",
+                "three3",
+                "three4",
+                "three5",
+                "smallerCartoon",
+                "three1",
+                "threeGlasses2",
+                "three2"
             ]
         },
         "face": {
@@ -195,13 +213,19 @@ export const schema = {
                 "enum": [
                     "palms",
                     "frame2",
-                    "frame1"
+                    "frame1",
+                    "borderKenya",
+                    "borderNigeria",
+                    "borderSouthafrica"
                 ]
             },
             "default": [
                 "palms",
                 "frame2",
-                "frame1"
+                "frame1",
+                "borderKenya",
+                "borderNigeria",
+                "borderSouthafrica"
             ]
         },
         "misc2Probability": {
@@ -250,7 +274,8 @@ export const schema = {
                     "tongue2",
                     "smile1",
                     "blush1",
-                    "subtleSmile"
+                    "subtleSmile",
+                    "clown"
                 ]
             },
             "default": [
@@ -283,7 +308,8 @@ export const schema = {
                 "tongue2",
                 "smile1",
                 "blush1",
-                "subtleSmile"
+                "subtleSmile",
+                "clown"
             ]
         }
     }
