@@ -31,18 +31,13 @@ const TOKEN = {
 } as Token;
 const HYPERION_ENDPOINT = 'https://hyptest.koy.network';
 const RPC_ENDPOINT = {
-    protocol: 'https',
-    host: 'testnet.koyn.goodblock.io',
-    port: 443,
-};
-const FUEL_RPC_ENDPOINT = {
-    protocol: 'https',
-    host: 'testnet.koyn.goodblock.io',
-    port: 443,
+    protocol: 'http',
+    host: 'testnet.koy.network',
+    port: 9876,
 };
 const API_ENDPOINT = 'https://testnet.koyn.goodblock.io/v1';
 const S3_PRODUCER_BUCKET = '';
-const DISPLAY_MAP = false;
+const DISPLAY_MAP = true;
 const THEME = {
     primary: '#90B862',
     secondary: '#006600',
@@ -52,7 +47,7 @@ const THEME = {
     negative: '#ff0000',
     info: '#31CCEC',
     warning: '#F2C037',
-    'color-map': '#115820',
+    'color-map': '#131313',
     'color-background': '#90B86226',
     'color-background-gradient': 'linear-gradient(132.08deg, rgba(255, 255, 255, 0.325) 0%, rgba(255, 255, 255, 0.1235) 52.08%, rgba(255, 255, 255, 0) 100%)',
     'color-primary-gradient': 'linear-gradient(90deg, #006600 0%, #2eb840 100%)',
@@ -90,7 +85,7 @@ export default class KoynTestnet extends BaseChain {
         return RPC_ENDPOINT;
     }
     getFuelRPCEndpoint(): RpcEndpoint | null {
-        return FUEL_RPC_ENDPOINT;
+        return null;
     }
     getApiEndpoint(): string {
         return API_ENDPOINT;
@@ -155,6 +150,10 @@ export default class KoynTestnet extends BaseChain {
                 hideChildrenTab: true,
                 hideContractsTab: false,
                 hideCreatedBy: true,
+            },
+            networkPageSettings: {
+                hideMapData: true,
+                hidePriceChart: true,
             },
         };
     }

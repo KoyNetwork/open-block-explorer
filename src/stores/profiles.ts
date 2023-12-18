@@ -1,18 +1,30 @@
 import { defineStore } from 'pinia';
 import { Profile } from 'src/types/Profile';
 import { createAvatar } from '@dicebear/core';
-import * as funEmoji from '@dicebear/fun-emoji';
+// import * as funEmoji from '@dicebear/fun-emoji';
 import * as bottts from '@dicebear/bottts';
+import * as koynavatar from 'src/utils/koyn-avatar';
 import { api } from 'src/api/index';
+import { GetTableRowsParams, ProfileRows } from 'src/types';
+import { Name } from '@greymass/eosio';
 
 export interface ProfilesStateInterface {
     // key is the account
     profiles: Map<string, Profile>;
+    profile: Profile;
 }
 
 export const useProfileStore = defineStore('profiles', {
     state: (): ProfilesStateInterface => ({
         profiles: new Map<string, Profile>(),
+        profile: {
+            account: '',
+            displayName: '',
+            avatar: '',
+            bio: '',
+            status: '',
+            isVerified: false,
+        },
     }),
     getters: {},
     actions: {
@@ -21,48 +33,14 @@ export const useProfileStore = defineStore('profiles', {
                 const abi = await api.getABI(account);
 
                 const avatar = () =>
-                    createAvatar(funEmoji, {
+                    createAvatar(koynavatar, {
                         seed: account,
                         rotate: 0,
-                        scale: 118,
                         radius: 28,
                         clip: true,
-                        backgroundColor: [
-                            'F1A12A',
-                            '4369E8',
-                            'E72AC7',
-                            'E8DA16',
-                            '98D4EB',
-                            '79CD6C',
-                            'EDB7C0',
-                            'F0C146',
-                            'D9644A',
-                            '32A985',
-                            'A78DDD',
-                            '423FEC',
-                            'AFE39C',
-                            '8448E5',
-                            'C9388F',
-                            '42D3F3',
-                        ],
-                        backgroundType: ['gradientLinear', 'solid'],
+                        // backgroundType: ['gradientLinear', 'solid'],
                         backgroundRotation: [10, 350],
-                        translateY: -6,
-                        mouth: [
-                            'cute',
-                            'drip',
-                            'faceMask',
-                            'kissHeart',
-                            'lilSmile',
-                            'plain',
-                            'shout',
-                            'shy',
-                            'smileLol',
-                            'smileTeeth',
-                            'tongueOut',
-                            'wideSmile',
-                            'pissed',
-                        ],
+                        // translateY: -6,
                     });
 
                 const botAvatar = () =>
@@ -156,6 +134,32 @@ export const useProfileStore = defineStore('profiles', {
                 this.profiles.set(account, profile);
             } catch (e) {
                 console.error(e);
+            }
+        },
+        async loadProfileInformation({ account }: {account: string}) {
+            const profileParams = {
+                code: 'profiles',
+                scope: 'profiles',
+                table: 'profiles',
+                lower_bound: Name.from(account),
+                upper_bound: Name.from(account),
+                reverse: false,
+            } as GetTableRowsParams;
+
+            const profileRows = ((await api.getTableRows(profileParams)) as ProfileRows).rows;
+
+            if (profileRows.length > 0) {
+                this.profile.displayName = profileRows[0].display_name;
+                this.profile.bio = profileRows[0].bio;
+                // this.profile.status = profileRows[0].status;
+                this.profile.avatar = profileRows[0].avatar;
+                this.profile.isVerified = profileRows[0].is_verified !== '0';
+            } else {
+                this.profile.displayName = '';
+                this.profile.bio = '';
+                // this.profile.status = '';
+                this.profile.avatar = '';
+                this.profile.isVerified = false;
             }
         },
     },

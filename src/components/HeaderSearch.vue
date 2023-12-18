@@ -208,13 +208,11 @@ export default defineComponent({
     hide-selected
     fill-input
     hide-bottom-space
-    input-style="color:white"
-    color="white"
     :loading="isLoading"
     :model-value="inputValue"
     :options="options"
     :option-disable="(item) => item.isHeader"
-    class="search-input"
+    class="search-input full-width"
     @input-value="(value) => inputValue = value"
     @keyup.enter="handleGoTo"
 >
@@ -253,6 +251,7 @@ export default defineComponent({
 
 <style lang="sass">
 .search-input
+  max-height: 40px
   background: #2B2B2BCC
   border-radius: 4px
 

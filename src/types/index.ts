@@ -42,6 +42,8 @@ export {
     AccountsRows,
     StakedbalRows,
     ConfigaRows,
+    ProfileRow,
+    ProfileRows,
 } from 'src/types/TableRows';
 export { BP } from 'src/types/BP';
 export { ChainInfo } from 'src/types/ChainInfo';

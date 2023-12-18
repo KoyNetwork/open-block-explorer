@@ -26,4 +26,8 @@ jobs:
           git pull --autostash
           cp ~/obe.env .env
           rm -rf dist/spa/*
-          yarn quasar build
+          source ~/.nvm/nvm.sh
+          nvm use 20
+          yarn install
+          yarn build
+          node -v

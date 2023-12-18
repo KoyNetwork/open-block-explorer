@@ -31,8 +31,14 @@ export interface AccountPageSettings {
     hideCreatedBy: boolean;
 }
 
+export interface NetworkPageSettings {
+    hideMapData: boolean;
+    hidePriceChart: boolean;
+}
+
 export interface UiCustomization {
     footerLinks: FooterLink[];
     headerSettings: HeaderSettings;
     accountPageSettings: AccountPageSettings;
+    networkPageSettings: NetworkPageSettings;
 }

@@ -7,6 +7,8 @@ import ResourcesDialog from 'src/components/resources/ResourcesDialog.vue';
 import StakingDialog from 'src/components/staking/StakingDialog.vue';
 import KoyStakingDialog from 'src/components/koyStaking/StakingDialog.vue';
 import DateField from 'src/components/DateField.vue';
+import NumberFormat from 'src/components/NumberFormat.vue';
+import VueMarkdown from 'vue-markdown-render';
 import { date, useQuasar, copyToClipboard } from 'quasar';
 import { getChain } from 'src/config/ConfigManager';
 import { api } from 'src/api';
@@ -31,6 +33,8 @@ export default defineComponent({
         DateField,
         StakingDialog,
         KoyStakingDialog,
+        NumberFormat,
+        VueMarkdown,
     },
     props: {
         account: {
@@ -96,6 +100,7 @@ export default defineComponent({
         const openKoyStakingDialog = ref<boolean>(false);
 
         const accountData = ref<API.v1.AccountObject>();
+        const profileData = computed(() => profileStore.profile);
         const availableTokens = ref<Token[]>([]);
 
 
@@ -141,7 +146,7 @@ export default defineComponent({
 
         let profile = computed(() => profileStore.profiles.get(props.account));
 
-
+        const showProfileData = computed(() => profileData.value.displayName !== '' || profileData.value.status !== '' || profileData.value.bio !== '');
         const setToken = (value: Token) => {
             void chainStore.setToken(value);
         };
@@ -150,6 +155,7 @@ export default defineComponent({
             try {
                 isLoading.value = true;
                 accountData.value = await api.getAccount(props.account);
+                await profileStore.loadProfileInformation({ account: props.account });
                 await loadAccountCreatorInfo();
                 await loadProfile();
                 await loadBalances();
@@ -391,11 +397,15 @@ export default defineComponent({
             try {
                 usdPrice.value = await chain.getUsdPrice();
                 await loadAccountData();
-                await accountStore.updateRexData({
-                    account: props.account,
-                });
+                if (!accountPageSettings.value.hideRexInfo) {
+                    await accountStore.updateRexData({
+                        account: props.account,
+                    });
+                }
                 loadSystemToken();
-                void chainStore.updateRamPrice();
+                if (!accountPageSettings.value.hideRamInfo) {
+                    void chainStore.updateRamPrice();
+                }
             } catch(e) {
                 console.error(e);
             }
@@ -470,6 +480,8 @@ export default defineComponent({
             updateTokenBalances,
             claimRewards,
             profile,
+            profileData,
+            showProfileData,
         };
     },
 });
@@ -481,41 +493,46 @@ export default defineComponent({
     <q-card v-if="accountExists" class="account-card">
         <q-card-section class="resources-container">
             <div class="inline-section">
-                <div class="items-center justify-center row full-height q-gutter-sm">
-                    <img v-if="profile?.avatar" class="avatar-image" :src="profile.avatar" >
-                    <div class="justify-center column">
-                        <div class="items-center row">
-                            <div class="text-title">{{ account }}</div>
-                            <q-btn
-                                class="float-right"
-                                flat
-                                round
-                                color="white"
-                                icon="content_copy"
-                                size="sm"
-                                @click="copy(account)"
-                            />
+                <div class="items-center justify-center column full-height q-gutter-sm q-mb-md">
+                    <div class="items-center row">
+                        <div class="text-title">{{ account }}</div>
+                        <q-btn
+                            class="float-right"
+                            flat
+                            round
+                            color="white"
+                            icon="content_copy"
+                            size="sm"
+                            @click="copy(account)"
+                        />
+                    </div>
+                    <div v-show="!accountPageSettings.hideCreatedBy">
+                        <div
+                            v-if="creatingAccount && creatingAccount !== '__self__'"
+                            class="text-subtitle"
+                        >
+                            created by
+                            <span>&nbsp;<a @click="loadCreatorAccount">{{ creatingAccount }}</a>&nbsp;</span>
+                            <div>
+                                <DateField :timestamp="createTime" showAge>&nbsp;</DateField>
+                                <q-tooltip>{{createTimeFormat}}</q-tooltip>
+                            </div><a class="q-ml-xs tx-link" @click="loadCreatorTransaction">
+                                <q-icon name="fas fa-link"/></a>
                         </div>
-                        <div v-show="!accountPageSettings.hideCreatedBy">
-                            <div
-                                v-if="creatingAccount && creatingAccount !== '__self__'"
-                                class="text-subtitle"
-                            >
-                                created by
-                                <span>&nbsp;<a @click="loadCreatorAccount">{{ creatingAccount }}</a>&nbsp;</span>
-                                <div>
-                                    <DateField :timestamp="createTime" showAge>&nbsp;</DateField>
-                                    <q-tooltip>{{createTimeFormat}}</q-tooltip>
-                                </div><a class="q-ml-xs tx-link" @click="loadCreatorTransaction">
-                                    <q-icon name="fas fa-link"/></a>
-                            </div>
-                            <div v-else class="text-subtitle">created<span>&nbsp;</span>
-                                <div>
-                                    <DateField :timestamp="createTime" showAge>&nbsp;</DateField>
-                                    <q-tooltip>{{createTimeFormat}}</q-tooltip>
-                                </div>
+                        <div v-else class="text-subtitle">created<span>&nbsp;</span>
+                            <div>
+                                <DateField :timestamp="createTime" showAge>&nbsp;</DateField>
+                                <q-tooltip>{{createTimeFormat}}</q-tooltip>
                             </div>
                         </div>
+                    </div>
+                </div>
+                <div class="items-center justify-center row full-height q-gutter-sm text-body1">
+                    <img v-if="profile?.avatar" class="avatar-image col-4" :src="profile.avatar" >
+                    <div v-show="showProfileData" class="justify-center column col-8 q-ml-md">
+                        <VueMarkdown v-show="profileData.displayName !== ''" class="text-h5" :source="profileData.displayName" />
+                        <VueMarkdown v-show="profileData.status !== ''" :source="profileData.status" />
+                        <VueMarkdown v-show="profileData.bio !== ''" :source="profileData.bio" />
                     </div>
                 </div>
                 <q-space/>
@@ -610,51 +627,49 @@ export default defineComponent({
                         <td v-if="isLoading" class="text-right total-amount total-loading-spinner">
                             <q-spinner color="white" size="1.5em"/>
                         </td>
-                        <td v-else class="text-right total-amount">{{ formatAsset(totalTokens) }}</td>
-                    </tr>
+                        <td class="text-right"><NumberFormat class="total-amount" :valueToFormat="totalTokens"/></td>                    </tr>
                     <tr v-show="!isLoading && totalValueString.length > 0" class="total-row">
                         <td class="text-left"></td>
-                        <td class="text-right total-value">{{ totalValueString }}</td>
-                    </tr>
+                        <td class="text-right"><NumberFormat class="total-value" :valueToFormat="totalValueString"/></td>                    </tr>
                     <tr>
                         <td class="text-left">LIQUID</td>
-                        <td class="text-right">{{ formatAsset(liquidNative) }}</td>
+                        <td class="text-right"><NumberFormat :valueToFormat="liquidNative"/></td>
                     </tr>
                     <tr v-if="!accountPageSettings.hideRexInfo">
                         <td class="text-left">REX staked (includes savings)</td>
-                        <td class="text-right">{{ formatAsset(rexStaked) }}</td>
+                        <td class="text-right"><NumberFormat :valueToFormat="rexStaked"/></td>
                     </tr>
                     <tr v-if="!accountPageSettings.hideRexInfo">
                         <td class="text-left">REX liquid deposits</td>
-                        <td class="text-right">{{ formatAsset(rexDeposits) }}</td>
+                        <td class="text-right"><NumberFormat :valueToFormat="rexDeposits"/></td>
                     </tr>
                     <tr v-if="!accountPageSettings.hideCpuInfo">
                         <td class="text-left">STAKED for CPU</td>
-                        <td class="text-right">{{ formatAsset(stakedCPU) }}</td>
+                        <td class="text-right"><NumberFormat :valueToFormat="stakedCPU"/></td>
                     </tr>
                     <tr v-if="!accountPageSettings.hideNetInfo">
                         <td class="text-left">STAKED for NET</td>
-                        <td class="text-right">{{ formatAsset(stakedNET) }}</td>
+                        <td class="text-right"><NumberFormat :valueToFormat="stakedNET"/></td>
                     </tr>
                     <tr v-if="!accountPageSettings.hideRefundingInfo">
                         <td class="text-left">REFUNDING from staking</td>
-                        <td class="text-right">{{ formatAsset(stakedRefund) }}</td>
+                        <td class="text-right"><NumberFormat :valueToFormat="stakedRefund"/></td>
                     </tr>
                     <tr v-if="!accountPageSettings.hideDelegatedInfo">
                         <td class="text-left">DELEGATED to others</td>
-                        <td class="text-right">{{ formatAsset(delegatedToOthers) }}</td>
+                        <td class="text-right"><NumberFormat :valueToFormat="delegatedToOthers"/></td>
                     </tr>
                     <tr v-if="!accountPageSettings.hideDelegatedInfo">
                         <td class="text-left">DELEGATED by others</td>
-                        <td class="text-right">{{ formatAsset(delegatedByOthers) }}</td>
+                        <td class="text-right"><NumberFormat :valueToFormat="delegatedByOthers"/></td>
                     </tr>
                     <tr>
                         <td class="text-left">STAKED</td>
-                        <td class="text-right">{{ formatAsset(stakedBal) }}</td>
+                        <td class="text-right"><NumberFormat :valueToFormat="stakedBal"/></td>
                     </tr>
                     <tr>
                         <td class="text-left">UNSTAKED</td>
-                        <td class="text-right">{{ formatAsset(unstakedBal) }}</td>
+                        <td class="text-right"><NumberFormat :valueToFormat="unstakedBal"/></td>
                     </tr>
                     <tr>
                         <td class="text-left">AVAILABLE TO CLAIM</td>

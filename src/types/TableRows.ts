@@ -47,6 +47,18 @@ export interface ConfigaRows {
   rows: ConfigaRow[];
 }
 
+export interface ProfileRow {
+  display_name: string;
+  avatar: string;
+  bio: string;
+  status: string;
+  is_verified: string;
+}
+
+export interface ProfileRows {
+  rows: ProfileRow[];
+}
+
 export interface GenericTable {
   rows: unknown[];
 }

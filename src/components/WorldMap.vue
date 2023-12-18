@@ -21,74 +21,7 @@ import VectorImageLayer from 'ol/layer/VectorImage';
 import { getCssVar } from 'quasar';
 import { useChainStore } from 'src/stores/chain';
 import { mapActions } from 'pinia';
-
-// Map core style
-const style = new Style({
-    image: new CircleStyle({
-        fill: new Fill({
-            color: '#FFFFFF'
-        }),
-        radius: 5
-    }),
-    fill: new Fill({
-        color: getCssVar('color-map')
-    }),
-    stroke: new Stroke({
-        color: getCssVar('color-map'),
-        width: 1
-    }),
-    zIndex: 50
-});
-
-// BP location feature style with zIndex biggetr that map
-const producerStyle = new Style({
-    image: new CircleStyle({
-        fill: new Fill({
-            color: '#8276d2'
-        }),
-        stroke: new Stroke({
-            color: '#63C9EF',
-            width: 3
-        }),
-        radius: 5
-    }),
-    zIndex: 51
-});
-
-const top21Style = new Style({
-    image: new CircleStyle({
-        fill: new Fill({
-            color: '#8276d2'
-        }),
-        stroke: new Stroke({
-            color: '#FFFFFF',
-            width: 3
-        }),
-        radius: 5
-    }),
-    zIndex: 51
-});
-
-// Map source uses vectorLayer with vector source
-const source = new VectorSource({
-    wrapX: false,
-    url: 'https://openlayers.org/data/vector/ecoregions.json',
-    format: new GeoJSON()
-});
-
-const vectorLayer = new VectorImageLayer({
-    imageRatio: 1,
-    source: source,
-    style: style
-});
-
-const vectorSource = new VectorSource({
-    wrapX: false
-});
-
-const vector = new VectorLayer({
-    source: vectorSource
-});
+import { KoyBP } from 'src/types/BP';
 
 export default defineComponent({
     name: 'WorldMap',
@@ -103,7 +36,8 @@ export default defineComponent({
         const zoom = ref(8);
         const rotation = ref(0);
         const producerToggle = ref<boolean>(Boolean(Number(localStorage.getItem('mapBP-toggle'))));
-        const BPlist = computed((): BP[] => chainStore.bpList);
+        const BPlist = computed((): KoyBP[] => chainStore.bpList);
+        const currentBp = ref(0);
         const schedule = computed(
             (): string[] => chainStore.producerSchedule
         );
@@ -120,6 +54,7 @@ export default defineComponent({
             zoom,
             rotation,
             BPlist,
+            currentBp,
             HeadProducer,
             currentHeadProducer,
             schedule,
@@ -138,7 +73,76 @@ export default defineComponent({
         };
     },
     async mounted() {
-        await this.chainStore.updateBpList();
+        this.chainStore.updateBpList();
+        await setTimeout(null, 1000);
+        
+        // ---- Map Styles ----
+        const style = new Style({
+            image: new CircleStyle({
+                fill: new Fill({
+                    color: getCssVar('primary')
+                }),
+                radius: 5
+            }),
+            fill: new Fill({
+                color: getCssVar('color-map')
+            }),
+            stroke: new Stroke({
+                color: getCssVar('color-map'),
+                width: 1
+            }),
+            zIndex: 50
+        });
+
+        // BP location feature style with zIndex biggetr that map
+        const producerStyle = new Style({
+            image: new CircleStyle({
+                fill: new Fill({
+                    color: '#8276d2'
+                }),
+                stroke: new Stroke({
+                    color: '#63C9EF',
+                    width: 3
+                }),
+                radius: 5
+            }),
+            zIndex: 51
+        });
+
+        const top21Style = new Style({
+            image: new CircleStyle({
+                fill: new Fill({
+                    color: '#8276d2'
+                }),
+                stroke: new Stroke({
+                    color: '#FFFFFF',
+                    width: 3
+                }),
+                radius: 5
+            }),
+            zIndex: 51
+        });
+
+        // Map source uses vectorLayer with vector source
+        const source = new VectorSource({
+            wrapX: false,
+            url: 'https://openlayers.org/data/vector/ecoregions.json',
+            format: new GeoJSON()
+        });
+
+        const vectorLayer = new VectorImageLayer({
+            imageRatio: 1,
+            source: source,
+            style: style
+        });
+
+        const vectorSource = new VectorSource({
+            wrapX: false
+        });
+
+        const vector = new VectorLayer({
+            source: vectorSource
+        });
 
         // ---- Overlay ----
         const container = this.$refs['popup'] as any;
@@ -158,7 +162,7 @@ export default defineComponent({
             }
         });
 
-        const producerOverlay = new Overlay({
+        const producerOverlay = new Overlay({  
             element: producerContainer
         });
 
@@ -218,10 +222,7 @@ export default defineComponent({
                 selected.getProperties().type === 'bp'
             ) {
                 content.innerHTML =
-                    (selected.getId() === this.HeadProducer
-                        ? '<div class="owner-text text-h6 text-center text-uppercase text-primary">' +
-                            'Producing</div>'
-                        : '') +
+                    
                     '<div class="owner-text text-h6 text-center text-uppercase">' +
                     selected.getId() +
                     '</div>' +
@@ -263,10 +264,7 @@ export default defineComponent({
                 selected.getProperties().type === 'bp'
             ) {
                 content.innerHTML =
-                    (selected.getId() === this.HeadProducer
-                        ? '<div class="owner-text text-h6 text-center text-uppercase text-primary">' +
-                            'Producing</div>'
-                        : '') +
+                    
                     '<div class="owner-text text-h6 text-center text-uppercase">' +
                     selected.getId() +
                     '</div>' +
@@ -283,11 +281,11 @@ export default defineComponent({
         // ---- Map ----
 
         // Add all the BP location features from s3 bucket to map
-        function addBP(BPlist: BP[], schedule: string[]) {
+        function addBP(BPlist: KoyBP[], schedule: string[]) {
             for (const bp of BPlist) {
-                if (bp.org && bp.org.location) {
-                    const x = bp.org.location.longitude;
-                    const y = bp.org.location.latitude;
+                if (bp.location) {
+                    const x = bp.location.longitude;
+                    const y = bp.location.latitude;
                     const geom = new Point(fromLonLat([x, y]));
                     const feature = new Feature(geom);
                     if (schedule.includes(bp.owner)) {
@@ -296,7 +294,7 @@ export default defineComponent({
                         feature.setStyle(style);
                     }
                     feature.setId(bp.owner);
-                    feature.setProperties({ type: 'bp', country: bp.org.location.name });
+                    feature.setProperties({ type: 'bp', country: bp.location.name });
                     vectorSource.addFeature(feature);
                 } else {
                     const x = Math.random() * 360 - 180;
@@ -339,7 +337,7 @@ export default defineComponent({
                     image: new CircleStyle({
                         radius: radius,
                         stroke: new Stroke({
-                            color: 'rgba(255, 255, 255, ' + opacity + ')',
+                            color: getCssVar('secondary'),
                             width: 0.25 + opacity
                         })
                     })
@@ -354,40 +352,14 @@ export default defineComponent({
 
         // Checks to see if BP has changed and adds flash animation
         const addBPflash = () => {
-            if (this.HeadProducer !== this.currentHeadProducer) {
-                producerOverlay.setPosition(undefined);
-                let feature = vectorSource.getFeatureById(this.HeadProducer);
-                let oldFeature = vectorSource.getFeatureById(this.currentHeadProducer);
-                this.currentHeadProducer = this.HeadProducer;
-                this.MapSource;
-                if (feature !== null) {
-                    producerContent.innerHTML =
-                        (feature.getId() === this.HeadProducer
-                            ? '<div class="owner-text text-h6 text-center text-uppercase text-primary">' +
-                                'Producing</div>'
-                            : '') +
-                        '<div class="owner-text text-h6 text-center text-uppercase">' +
-                        feature.getId() +
-                        '</div>' +
-                        '<div class="country-text text-subtitle1 text-center">' +
-                        feature.getProperties().country +
-                        '</div>';
-                    if (this.producerToggle) {
-                        producerOverlay.setPosition(
-                            (feature as any).getGeometry().getCoordinates()
-                        );
-                    }
-                    feature.setStyle(producerStyle);
-                    flash(feature);
-                }
-                if (oldFeature !== null) {
-                    if (this.schedule.includes(this.currentHeadProducer)) {
-                        oldFeature.setStyle(top21Style);
-                    } else {
-                        oldFeature.setStyle(style);
-                    }
-                }
+            const nextProducer = this.currentBp + 1 === this.BPlist.length ? 0 : this.currentBp + 1;
+            const newId = this.BPlist[nextProducer].owner;
+            let feature = vectorSource.getFeatureById(newId);
+            this.MapSource;
+            if (feature !== null) {
+                flash(feature);
             }
+            this.currentBp = nextProducer;
         };
 
         // on feature add do a flash animation
@@ -398,7 +370,7 @@ export default defineComponent({
         // Check BP every half second for changes
         window.setInterval(() => {
             addBPflash();
-        }, 1000);
+        }, 2000);
 
         addBP(this.BPlist, this.schedule);
         this.map = map;
@@ -409,15 +381,6 @@ export default defineComponent({
 
 <template>
 
-<div class="absolute q-pa-md producer-toggle text-white">
-  <q-toggle
-    v-model="producerToggle"
-    label="Show Active BP"
-    left-label
-    color="white"
-    @update:model-value="(val)=> updateToggleOption(val)"
-  />
-</div>
 <div class="map-container" id="map" ref="map-root"></div>
 <div class="ol-popup" id="popup" ref="popup"><a class="ol-popup-closer" href="#" id="popup-closer" ref="popup-closer" v-show="$q.platform.is.mobile"></a>
   <div id="popup-content" ref="popup-content"></div>
@@ -440,7 +403,7 @@ export default defineComponent({
 
 .ol-popup
   position: absolute
-  background: linear-gradient(90deg, rgba(203, 202, 245, 0.7) 0%, rgba(169, 202, 243, 0.7) 56.377%, rgba(73, 206, 255, 0.7) 100%)
+  background: #707070B3
   box-shadow: 0 1px 4px rgba(0,0,0,0.2)
   padding: 5px
   border-radius: 10px
@@ -457,14 +420,8 @@ export default defineComponent({
   position: absolute
   pointer-events: none
 
-.ol-popup:after
-  border-top-color: #CBCAF5
-  border-width: 10px
-  left: 48px
-  margin-left: -10px
-
 .ol-popup:before
-  border-top-color: #CBCAF5
+  border-top-color: #707070B3
   border-width: 11px
   left: 48px
   margin-left: -11px
