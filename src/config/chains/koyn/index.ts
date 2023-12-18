@@ -47,7 +47,7 @@ const THEME = {
     negative: '#FF0000',
     info: '#90B862',
     warning: '#FFBB69',
-    'color-map': '#131313',
+    'color-map': '#492030',
     'color-background': '#EE05F226',
     'color-background-gradient': 'linear-gradient(132.08deg, rgba(255, 255, 255, 0.325) 0%, rgba(255, 255, 255, 0.1235) 52.08%, rgba(255, 255, 255, 0) 100%)',
     'color-primary-gradient': 'linear-gradient(90deg, #82103C 65%, #492030 100%)',

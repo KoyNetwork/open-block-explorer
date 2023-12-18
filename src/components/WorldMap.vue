@@ -185,8 +185,8 @@ export default defineComponent({
             overlays: [overlay, producerOverlay],
             target: 'map',
             view: new View({
-                center: [0, 0],
-                zoom: 0
+                center: fromLonLat([25, 0]),
+                zoom: 3
             }),
             controls: [],
             interactions: []
@@ -337,7 +337,7 @@ export default defineComponent({
                     image: new CircleStyle({
                         radius: radius,
                         stroke: new Stroke({
-                            color: getCssVar('secondary'),
+                            color: getCssVar('primary'),
                             width: 0.25 + opacity
                         })
                     })
@@ -396,7 +396,7 @@ export default defineComponent({
   width: 100%
   max-width: 90%
 .map-container
-  background-color: transparent
+  background-color: var(--q-dark)
   background-repeat: no-repeat
   width: 100%
   height:70vh
