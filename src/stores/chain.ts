@@ -71,9 +71,11 @@ export const useChainStore = defineStore('chain', {
             this.ram_price = price;
         },
         updateBpList() {
-            this.setBpList([{ owner: 'eosio', location: { name: 'USA', longitude: -122.330280, latitude: 47.603230, country: 'USA' } },
-                { owner: 'p.kenya1', location: { name: 'KEN', longitude: 36.817223, latitude: -1.286389, country: 'KEN' } },
-                { owner: 'p.johan1', location: { name: 'ZAF', longitude: 28.034088, latitude: -26.195246, country: 'ZAF' } }]);
+            this.setBpList([{ owner: 'seattle.1.bp', location: { name: 'USA', longitude: -122.330280, latitude: 47.603230, country: 'USA' } },
+                { owner: 'nairobi.1.bp', location: { name: 'Kenya', longitude: 36.817223, latitude: -1.286389, country: 'Kenya' } },
+                { owner: 'joburg.1.bp', location: { name: 'South Africa', longitude: 28.034088, latitude: -26.195246, country: 'South Africa' } },
+                { owner: 'lagos.1.bp', location: { name: 'Nigeria', longitude: 3.362, latitude: 6.485, country: 'Nigeria' } },
+                { owner: 'cairo.1.bp', location: { name: 'Egypt', longitude: 31.232, latitude: 30.077, country: 'Egypt' } }]);
         //     try {
         //         const producerSchedule = (await api.getSchedule()).active.producers;
         //         // const schedule = producerSchedule.map(el => el.producer_name);
