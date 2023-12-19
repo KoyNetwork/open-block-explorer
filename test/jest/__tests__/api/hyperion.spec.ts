@@ -21,7 +21,7 @@ const userTokens = {
             precision: 4,
             amount: 308099.4234,
             contract: 'token.koyn',
-        }
+        },
     ],
 };
 
