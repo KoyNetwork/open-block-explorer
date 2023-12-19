@@ -126,7 +126,7 @@ export default class KoynTestnet extends BaseChain {
                 { label: 'PRIVACY', url: 'https://koy.network/privacy-policy' },
             ],
             headerSettings: {
-                hideLoginHandler: true,
+                hideLoginHandler: false,
 
                 hideNetworkTab: true,
                 hideWalletTab: true,
