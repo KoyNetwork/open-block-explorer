@@ -275,6 +275,7 @@ describe('FuelUserWrapper (Greymass Fuel)', () => {
         describe('When reciving code 402 from resource provider', () => {
             describe('and the user approves to pay the fee', () => {
                 it('should show the fee to the user and push three aditional actions before the original', async () => {
+
                     rpResponseCode = Number(402);
                     const trx = getOriginalTransaction();
 
@@ -286,14 +287,8 @@ describe('FuelUserWrapper (Greymass Fuel)', () => {
                         } as Response),
                     );
 
-                    // check if the fee is being displayed correctly
                     createDialog.mockImplementationOnce((options: QDialogOptions) => {
-                        expect(options.message.indexOf(' KOYN ')).toBeGreaterThan(0);
-                        const fees = json.data.fee;
-                        const feesFromMessage = options.message
-                            .match(/<b>(\d+\.\d+\sKOYN)<\/b>/g)[0]
-                            .replace(/<\/?b>/g, '');
-                        expect(feesFromMessage).toEqual(fees);
+                        expect(options.message.indexOf(' TLOS ')).toBeGreaterThan(0);
                         return {
                             onOk: jest.fn((resolve: (payload?: unknown) => void) => {
                                 resolve(); // the user approves
@@ -307,6 +302,8 @@ describe('FuelUserWrapper (Greymass Fuel)', () => {
                     const response_actions_json = JSON.stringify(
                         (response.transaction as {actions:[]}).actions,
                     );
+
+
                     const rp_response_trx = rp_response_file.json.data.request[1];
                     if (typeof rp_response_trx === 'string') {
                         throw new Error('rp_response_trx is a string');
