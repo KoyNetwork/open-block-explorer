@@ -31,11 +31,11 @@ const TOKEN = {
 } as Token;
 const HYPERION_ENDPOINT = 'https://hyptest.koy.network';
 const RPC_ENDPOINT = {
-    protocol: 'http',
+    protocol: 'https',
     host: 'testnet.koy.network',
-    port: 9876,
+    port: 443,
 };
-const API_ENDPOINT = 'https://testnet.koyn.goodblock.io/v1';
+const API_ENDPOINT = 'https://testnet.koy.network/v1';
 const S3_PRODUCER_BUCKET = '';
 const DISPLAY_MAP = true;
 const THEME = {
@@ -126,7 +126,7 @@ export default class KoynTestnet extends BaseChain {
                 { label: 'PRIVACY', url: 'https://koy.network/privacy-policy' },
             ],
             headerSettings: {
-                hideLoginHandler: true,
+                hideLoginHandler: false,
 
                 hideNetworkTab: true,
                 hideWalletTab: true,

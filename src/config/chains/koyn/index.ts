@@ -33,7 +33,7 @@ const HYPERION_ENDPOINT = 'https://hyperion.koy.network';
 const RPC_ENDPOINT = {
     protocol: 'https',
     host: 'mainnet.koy.network',
-    port: 9876,
+    port: 443,
 };
 const API_ENDPOINT = 'https://mainnet.koy.network/v1';
 const S3_PRODUCER_BUCKET = '';
@@ -126,7 +126,7 @@ export default class Koyn extends BaseChain {
                 { label: 'PRIVACY', url: 'https://koy.network/privacy-policy' },
             ],
             headerSettings: {
-                hideLoginHandler: true,
+                hideLoginHandler: false,
 
                 hideNetworkTab: true,
                 hideWalletTab: true,

@@ -109,9 +109,6 @@ export default defineComponent({
             (accountData.value?.refund_request?.net_amount.value ?? 0),
         );
 
-
-        const staked = computed((): number => stakedRefund.value + stakedNET.value + stakedCPU.value);
-
         const token = computed((): Token => chainStore.token);
 
         const liquidValue = computed((): number => accountStore.liquidValue);
@@ -390,6 +387,7 @@ export default defineComponent({
         };
 
         const claimRewards = () => {
+            console.log('claim rewards');
             void accountStore.claimRewards();
         };
 
