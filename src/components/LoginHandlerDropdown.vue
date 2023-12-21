@@ -59,7 +59,7 @@ export default defineComponent({
 
 <div class="connect-button-container">
     <q-avatar class="profile-avatar" size="32px">
-        <svg v-html="avatar" />
+        <img :src="avatar">
     </q-avatar>
     <q-btn-dropdown
         class="connect-button"
@@ -110,7 +110,7 @@ export default defineComponent({
     position: absolute
     top: 50%
     transform: translateY(-50%)
-    left: 4px
+    left: 16px
     z-index: 10
     border-radius: 30%
     svg
