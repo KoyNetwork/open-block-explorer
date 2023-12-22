@@ -60,9 +60,9 @@ export default defineComponent({
 
 <template>
 <div class="header-background">
-    <div class="flex row justify-between q-pa-sm">
-        <div class="colum-xs row-sm no-wrap items-center justify-center q-gutter-sm-x-md q-gutter-xs-y-sm">
-            <div class="flex column no-wrap q-gutter-xs items-start justify-center col-grow col-sm-shrink q-gutter-sm">
+    <div class="row text-center q-pa-sm q-pa-sm-md q-col-gutter-xs-sm justify-xs-center justify-sm-between full-width">
+        <div class="row col-xs-12 col-sm-4 col-md-3 q-gutter-sm-x-md no-wrap">
+            <div class="flex column no-wrap q-gutter-xs items-start justify-center col-grow col-sm-shrink">
                 <div>
                     <div class="flex row justify-between no-wrap">
                         <a href="/">
@@ -71,18 +71,18 @@ export default defineComponent({
                         </a>
                         <ChainsMenu v-if="showMultichainSelector"/>
                     </div>
-                    <div v-if="isTestnet" class="testnet-text text-center text-overline full-width q-px-xs">TESTNET</div>
+                    <div v-if="isTestnet" class="testnet-text text-overline full-width q-px-xs">TESTNET</div>
                 </div>
             </div>
-            <div>
+            <div class="q-mr-md">
                 <div class="col-sm-6 text-caption">Head Block</div>
                 <div class="col-sm-6 text-body2 text-bold">{{headBlock}}</div>
             </div>
         </div>
-        <div class="flex column items-end justify-center col-sm-8 q-gutter-y-md">
-            <LoginHandler v-if="!headerSettings.hideLoginHandler"/>
-            <HeaderSearch/>
+        <div class="row col-6 col-sm-5 col-lg-4 col-xs-6">
+            <HeaderSearch class="full-width"/>
         </div>
+        <LoginHandler v-if="!headerSettings.hideLoginHandler" class="col-4 col-xs-6 col-sm-3 flex column items-end q-m-r-m"/>
     </div>
     <div class="row justify-center col-12 q-pt-sm">
         <q-tabs

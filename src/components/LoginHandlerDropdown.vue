@@ -100,7 +100,6 @@ export default defineComponent({
 .connect-button
   width: fit-content
   height: 40px
-  width: 180px
   text-transform: lowercase
 .buttons-container
   width: 220px
@@ -119,5 +118,4 @@ export default defineComponent({
         width: 100%
 .connect-button-container
     position: relative
-    width: 180px // Makes container width fixed
 </style>
