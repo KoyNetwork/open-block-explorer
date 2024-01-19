@@ -39,6 +39,9 @@ export {
     GenericTable,
     RexPoolRows,
     RexPool,
+    AccountsRows,
+    StakedbalRows,
+    ConfigaRows,
     ProfileRow,
     ProfileRows,
 } from 'src/types/TableRows';

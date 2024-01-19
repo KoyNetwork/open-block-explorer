@@ -5,6 +5,7 @@ import PercentCircle from 'src/components/PercentCircle.vue';
 import SendDialog from 'src/components/SendDialog.vue';
 import ResourcesDialog from 'src/components/resources/ResourcesDialog.vue';
 import StakingDialog from 'src/components/staking/StakingDialog.vue';
+import KoyStakingDialog from 'src/components/koyStaking/StakingDialog.vue';
 import DateField from 'src/components/DateField.vue';
 import NumberFormat from 'src/components/NumberFormat.vue';
 import VueMarkdown from 'vue-markdown-render';
@@ -17,7 +18,6 @@ import { API, UInt64 } from '@greymass/eosio';
 import { formatCurrency } from 'src/utils/string-utils';
 import ConfigManager from 'src/config/ConfigManager';
 import { AccountPageSettings } from 'src/types/UiCustomization';
-import { StakedbalRows } from 'src/types/TableRows';
 import { useResourceStore } from 'src/stores/resources';
 import { useChainStore } from 'src/stores/chain';
 import { useAccountStore } from 'src/stores/account';
@@ -32,6 +32,7 @@ export default defineComponent({
         ResourcesDialog,
         DateField,
         StakingDialog,
+        KoyStakingDialog,
         NumberFormat,
         VueMarkdown,
     },
@@ -50,6 +51,8 @@ export default defineComponent({
         const profileStore = useProfileStore();
 
         const accountPageSettings = computed((): AccountPageSettings => ConfigManager.get().getCurrentChain().getUiCustomization().accountPageSettings);
+
+        const isKoyChain = computed((): boolean => chain.getName() === 'koyn' || chain.getName() === 'koyn-testnet');
 
         const createTime = ref<string>('2019-01-01T00:00:00.000');
         const createTransaction = ref<string>('');
@@ -83,13 +86,18 @@ export default defineComponent({
         const radius = ref(44);
         const stakedResources = ref(0);
 
-        const stakedBal = ref(0);
-        const unstakedBal = ref(0);
+        const stakedBal = computed((): number => accountStore.stakedBal);
+        const unstakedBal = computed((): number => accountStore.unstakedBal);
+        const availableToUnstake = computed((): number => accountStore.availableToUnstakeVal);
+        const availableToClaim = computed((): number => accountStore.claimableAmountVal);
+        const lastClaim = computed((): Date => accountStore.lastClaimTime);
+        const lastUnstake = computed((): Date =>  accountStore.lastUnstakeTime);
 
         const accountExists = ref<boolean>(true);
         const openSendDialog = ref<boolean>(false);
         const openResourcesDialog = ref<boolean>(false);
         const openStakingDialog = ref<boolean>(false);
+        const openKoyStakingDialog = ref<boolean>(false);
 
         const accountData = ref<API.v1.AccountObject>();
         const profileData = computed(() => profileStore.profile);
@@ -101,14 +109,12 @@ export default defineComponent({
             (accountData.value?.refund_request?.net_amount.value ?? 0),
         );
 
-
-        const staked = computed((): number => stakedRefund.value + stakedNET.value + stakedCPU.value);
-
         const token = computed((): Token => chainStore.token);
 
+        const liquidValue = computed((): number => accountStore.liquidValue);
         const liquidNative = computed((): number => accountData.value?.core_liquid_balance?.value
             ? accountData.value.core_liquid_balance.value
-            : 0);
+            : liquidValue.value);
 
         const totalValue = computed((): number => {
             if (typeof totalTokens.value === 'number') {
@@ -151,7 +157,7 @@ export default defineComponent({
                 await loadProfile();
                 await loadBalances();
                 loadResources();
-                await loadStakedBalance();
+                await accountStore.updateKoyStakedData({ account: props.account });
                 setTotalBalance();
                 await updateTokenBalances();
                 await updateResources({ account: props.account, force: true });
@@ -224,7 +230,7 @@ export default defineComponent({
         };
 
         const setTotalBalance = () => {
-            totalTokens.value = liquidNative.value + rex.value + staked.value + delegatedToOthers.value + stakedBal.value + unstakedBal.value;
+            totalTokens.value = liquidNative.value + stakedBal.value;
             isLoading.value = false;
         };
 
@@ -315,27 +321,6 @@ export default defineComponent({
             return total;
         };
 
-        const loadStakedBalance = async () => {
-            try {
-                const paramsStakedBal = {
-                    code: 'launch.stake',
-                    scope: 'launch.stake',
-                    table: 'stakes',
-                    lower_bound: props.account as unknown as TableIndexType,
-                    upper_bound: props.account as unknown as TableIndexType,
-                } as GetTableRowsParams;
-
-                const stakedBalRow = ((await api.getTableRows(paramsStakedBal)) as StakedbalRows)
-                    .rows[0];
-
-                stakedBal.value = Number(stakedBalRow.balance.split(' ')[0]);
-                unstakedBal.value = Number(stakedBalRow.unstaked_balance.split(' ')[0]);
-            } catch (e) {
-                stakedBal.value = 0;
-                unstakedBal.value = 0;
-            }
-        };
-
         const fixDec = (val: number): number => parseFloat(val.toFixed(3));
 
         const loadSystemToken = (): void => {
@@ -401,17 +386,26 @@ export default defineComponent({
             rexDeposits.value = 0;
         };
 
+        const claimRewards = () => {
+            console.log('claim rewards');
+            void accountStore.claimRewards();
+        };
+
         onMounted(async () => {
-            usdPrice.value = await chain.getUsdPrice();
-            await loadAccountData();
-            if (!accountPageSettings.value.hideRexInfo) {
-                await accountStore.updateRexData({
-                    account: props.account,
-                });
-            }
-            loadSystemToken();
-            if (!accountPageSettings.value.hideRamInfo) {
-                void chainStore.updateRamPrice();
+            try {
+                usdPrice.value = await chain.getUsdPrice();
+                await loadAccountData();
+                if (!accountPageSettings.value.hideRexInfo) {
+                    await accountStore.updateRexData({
+                        account: props.account,
+                    });
+                }
+                loadSystemToken();
+                if (!accountPageSettings.value.hideRamInfo) {
+                    void chainStore.updateRamPrice();
+                }
+            } catch(e) {
+                console.error(e);
             }
         });
 
@@ -428,6 +422,7 @@ export default defineComponent({
 
         return {
             accountPageSettings,
+            isKoyChain,
             MICRO_UNIT,
             KILO_UNIT,
             stakedCPU,
@@ -440,6 +435,10 @@ export default defineComponent({
             ram_max,
             stakedBal,
             unstakedBal,
+            availableToClaim,
+            availableToUnstake,
+            lastUnstake,
+            lastClaim,
             creatingAccount,
             isLoading,
             tokensLoading,
@@ -460,6 +459,7 @@ export default defineComponent({
             openSendDialog,
             openResourcesDialog,
             openStakingDialog,
+            openKoyStakingDialog,
             delegatedByOthers,
             delegatedToOthers,
             isAccount,
@@ -476,6 +476,7 @@ export default defineComponent({
             copy,
             formatAsset,
             updateTokenBalances,
+            claimRewards,
             profile,
             profileData,
             showProfileData,
@@ -593,6 +594,24 @@ export default defineComponent({
                         @click="openStakingDialog = true"
                     />
                 </div>
+                <div v-if="isAccount && isKoyChain" class="col-3">
+                    <q-btn
+                        :disable="tokensLoading || isLoading"
+                        :label='tokensLoading ? "Loading..." : "Staking"'
+                        class="ellipsis full-width"
+                        color="primary"
+                        @click="openKoyStakingDialog = true"
+                    />
+                </div>
+                <div v-if="isAccount && isKoyChain">
+                    <q-btn
+                        :disable="tokensLoading || isLoading"
+                        :label='tokensLoading ? "Loading..." : "Claim"'
+                        class="ellipsis full-width"
+                        color="primary"
+                        @click="claimRewards"
+                    />
+                </div>
             </div>
         </q-card-section>
         <q-markup-table>
@@ -650,6 +669,22 @@ export default defineComponent({
                         <td class="text-left">UNSTAKED</td>
                         <td class="text-right"><NumberFormat :valueToFormat="unstakedBal"/></td>
                     </tr>
+                    <tr>
+                        <td class="text-left">AVAILABLE TO CLAIM</td>
+                        <td class="text-right">{{ formatAsset(availableToClaim) }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-left">LAST CLAIM</td>
+                        <td class="text-right">{{ lastClaim?.toDateString() }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-left">AVAILABLE TO UNSTAKE</td>
+                        <td class="text-right">{{ formatAsset(availableToUnstake) }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-left">LAST UNSTAKE</td>
+                        <td class="text-right">{{ lastUnstake?.toDateString() }}</td>
+                    </tr>
                 </tbody>
             </thead>
         </q-markup-table>
@@ -666,6 +701,10 @@ export default defineComponent({
             />
             <StakingDialog
                 v-model="openStakingDialog"
+                :availableTokens="availableTokens"
+            />
+            <KoyStakingDialog
+                v-model="openKoyStakingDialog"
                 :availableTokens="availableTokens"
             />
         </div>

@@ -16,6 +16,14 @@ export interface RexbalRows {
   rows: Rexbal[];
 }
 
+export interface AccountsBal {
+  balance: string;
+}
+
+export interface AccountsRows {
+  rows: AccountsBal[];
+}
+
 export interface Stakedbal {
   account: string;
   receiver_account: string;
@@ -29,6 +37,14 @@ export interface Stakedbal {
 
 export interface StakedbalRows {
   rows: Stakedbal[];
+}
+
+export interface ConfigaRow {
+  daily_yield_percentage: number;
+}
+
+export interface ConfigaRows {
+  rows: ConfigaRow[];
 }
 
 export interface ProfileRow {

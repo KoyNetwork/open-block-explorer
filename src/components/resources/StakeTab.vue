@@ -23,8 +23,8 @@ export default defineComponent({
         const openTransaction = ref<boolean>(false);
         const stakingAccount = ref<string>(accountStore.accountName || '');
         const accountTotal = computed((): string =>
-            (accountStore.data.core_liquid_balance ?? 0).toString(),
-        );
+            (accountStore.data.core_liquid_balance ?? 0).toString());
+
         const accountTotalAsNumber = computed(() => assetToAmount(accountTotal.value));
         const cpuTokens = ref<string>('0');
         const netTokens = ref<string>('0');
@@ -198,7 +198,7 @@ export default defineComponent({
 
 <style lang="sass">
 .button-accent
-    background: rgba(108, 35, 255, 1)
+    background: --var(primary)
     border-radius: 4px
     color: $grey-4
 </style>

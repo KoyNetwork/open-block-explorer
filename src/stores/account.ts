@@ -8,7 +8,7 @@ import { formatCurrency } from 'src/utils/string-utils';
 import { FuelUserWrapper } from 'src/api/fuel';
 import { api } from 'src/api';
 import { SignTransactionResponse } from 'universal-authenticator-library/dist/interfaces';
-
+import { AccountsRows, StakedbalRows, ConfigaRows } from 'src/types';
 
 export interface AccountStateInterface {
     loading: unknown;
@@ -34,6 +34,14 @@ export interface AccountStateInterface {
     tlosRexRatio: number;
     rexfund: number;
     chainId: string;
+    stakedBal: number;
+    unstakedBal: number;
+    availableToUnstakeVal: number;
+    claimableAmountVal: number;
+    withdrawSpeedVal: number;
+    lastUnstakeTime: Date;
+    lastClaimTime: Date;
+    liquidValue: number;
 }
 
 const chain = getChain();
@@ -91,6 +99,14 @@ export const useAccountStore = defineStore('account', {
         tlosRexRatio: 1,
         rexfund: 0,
         chainId: '',
+        stakedBal: 0,
+        unstakedBal: 0,
+        availableToUnstakeVal: 0,
+        claimableAmountVal: 0,
+        withdrawSpeedVal: 0,
+        lastUnstakeTime: new Date(0),
+        lastClaimTime: new Date(0),
+        liquidValue: 0,
     }),
     getters: {
         account(): AccountStateInterface {
@@ -151,20 +167,18 @@ export const useAccountStore = defineStore('account', {
         setRexActions(rexActions: Action[]) {
             this.rexActions = rexActions;
         },
-        setRexbal(
-            params: {
-                rexbal: Rexbal;
-                coreBalance: number;
-                maturingRex: number;
-                savingsRex: number;
-                maturedRex: number;
-            },
-        ) {
-            this.rexbal= params.rexbal;
-            this.coreRexBalance= formatCurrency(params.coreBalance, 4, symbol);
-            this.maturedRex= formatCurrency(params.maturedRex, 4, symbol);
-            this.maturingRex= formatCurrency(params.maturingRex, 4, symbol);
-            this.savingsRex= formatCurrency(params.savingsRex, 4, symbol);
+        setRexbal(params: {
+            rexbal: Rexbal;
+            coreBalance: number;
+            maturingRex: number;
+            savingsRex: number;
+            maturedRex: number;
+        }) {
+            this.rexbal = params.rexbal;
+            this.coreRexBalance = formatCurrency(params.coreBalance, 4, symbol);
+            this.maturedRex = formatCurrency(params.maturedRex, 4, symbol);
+            this.maturingRex = formatCurrency(params.maturingRex, 4, symbol);
+            this.savingsRex = formatCurrency(params.savingsRex, 4, symbol);
         },
         setVote(vote: string[]) {
             this.vote = vote.sort();
@@ -188,19 +202,16 @@ export const useAccountStore = defineStore('account', {
             this.chainId = chainId;
         },
 
-        async login({ account, authenticator }: {account: string, authenticator: Authenticator}): Promise<void> {
+        async login({ account, authenticator }: { account: string; authenticator: Authenticator }): Promise<void> {
             await authenticator.init();
 
             if (!account) {
-                const requestAccount = await (
-                    authenticator
-                ).shouldRequestAccountName();
+                const requestAccount = await authenticator.shouldRequestAccountName();
                 if (requestAccount) {
                     this.requestAccount = true;
                     return;
                 }
             }
-
 
             const users = await authenticator.login();
             if (users?.length) {
@@ -217,10 +228,7 @@ export const useAccountStore = defineStore('account', {
                 });
 
                 localStorage.setItem(`account_${authenticator.chains[0].chainId}`, accountName);
-                localStorage.setItem(
-                    `autoLogin_${(authenticator).chains[0].chainId}`,
-                    (authenticator).getName(),
-                );
+                localStorage.setItem(`autoLogin_${authenticator.chains[0].chainId}`, authenticator.getName());
             }
         },
         logout() {
@@ -237,7 +245,7 @@ export const useAccountStore = defineStore('account', {
                 return;
             }
         },
-        async updateRexData({ account }: {account: string}) {
+        async updateRexData({ account }: { account: string }) {
             const paramsrexbal = {
                 code: 'eosio',
                 limit: '2',
@@ -278,10 +286,7 @@ export const useAccountStore = defineStore('account', {
             this.setRexFund(rexFundBalance);
 
             const rexbal = rexbalRows.rows[0];
-            const rexBalance =
-                rexbal && rexbal.rex_balance
-                    ? parseFloat(rexbal.rex_balance.split(' ')[0])
-                    : 0;
+            const rexBalance = rexbal && rexbal.rex_balance ? parseFloat(rexbal.rex_balance.split(' ')[0]) : 0;
             const totalRex = Number(rexpool.total_rex.split(' ')[0]);
             const totalLendable = Number(rexpool.total_lendable.split(' ')[0]);
             const tlosRexRatio = totalRex > 0 ? totalLendable / totalRex : 1;
@@ -291,9 +296,7 @@ export const useAccountStore = defineStore('account', {
             coreBalance += rexFundBalance;
 
             let savingsRex = 0;
-            let maturedRex = rexbal
-                ? tlosRexRatio * (Number(rexbal.matured_rex) / 10000)
-                : 0;
+            let maturedRex = rexbal ? tlosRexRatio * (Number(rexbal.matured_rex) / 10000) : 0;
 
             let maturingRex = 0;
             if (rexbal && rexbal.rex_maturities && rexbal.rex_maturities.length > 0) {
@@ -344,11 +347,17 @@ export const useAccountStore = defineStore('account', {
             const rexActions = (await api.getActions(account as unknown as string, filter)).actions;
             this.setRexActions(rexActions);
         },
-        async sendAction({ account, data, name, actor, permission }: {
-            name: Name|string;
+        async sendAction({
+            account,
+            data,
+            name,
+            actor,
+            permission,
+        }: {
+            name: Name | string;
             data: Record<string, unknown>;
-            account?: Name|string;
-            actor?: Name|string;
+            account?: Name | string;
+            actor?: Name | string;
             permission?: string;
         }): Promise<SignTransactionResponse | null> {
             const actions = [
@@ -386,7 +395,7 @@ export const useAccountStore = defineStore('account', {
 
             return transaction;
         },
-        async stakeRex({ amount }: {amount: string}) {
+        async stakeRex({ amount }: { amount: string }) {
             let transaction = null;
             const quantityStr = formatCurrency(amount, 4, symbol, true);
             const actions = [
@@ -436,11 +445,9 @@ export const useAccountStore = defineStore('account', {
                 this.setTransactionError(e);
             }
         },
-        async unstakeRex({ amount }: {amount: number|string}) {
+        async unstakeRex({ amount }: { amount: number | string }) {
             let transaction = null;
-            const tokenRexBalance = this.rexbal.rex_balance
-                ? Number(this.rexbal.rex_balance.split(' ')[0])
-                : 0;
+            const tokenRexBalance = this.rexbal.rex_balance ? Number(this.rexbal.rex_balance.split(' ')[0]) : 0;
             if (tokenRexBalance === 0) {
                 return;
             }
@@ -495,7 +502,7 @@ export const useAccountStore = defineStore('account', {
                 this.setTransactionError(e);
             }
         },
-        async unstakeRexFund({ amount }: {amount: number}) {
+        async unstakeRexFund({ amount }: { amount: number }) {
             let transaction = null;
             const quantityStr = formatCurrency(amount, 4, symbol, true);
 
@@ -530,7 +537,7 @@ export const useAccountStore = defineStore('account', {
                 this.setTransactionError(e);
             }
         },
-        async stakeCpuNetRex({ cpuAmount, netAmount }: {cpuAmount: string, netAmount: string}) {
+        async stakeCpuNetRex({ cpuAmount, netAmount }: { cpuAmount: string; netAmount: string }) {
             let transaction = null;
             const quantityStrCPU = formatCurrency(cpuAmount, 4, symbol, true);
             const quantityStrNET = formatCurrency(netAmount, 4, symbol, true);
@@ -569,7 +576,7 @@ export const useAccountStore = defineStore('account', {
                 this.setTransactionError(e);
             }
         },
-        async unstakeCpuNetRex({ cpuAmount, netAmount }: {cpuAmount: string, netAmount: string}) {
+        async unstakeCpuNetRex({ cpuAmount, netAmount }: { cpuAmount: string; netAmount: string }) {
             let transaction = null;
             const quantityStrCPU = formatCurrency(cpuAmount, 4, symbol, true);
             const quantityStrNET = formatCurrency(netAmount, 4, symbol, true);
@@ -650,7 +657,7 @@ export const useAccountStore = defineStore('account', {
                 this.setTransactionError(e);
             }
         },
-        async buyRam({ amount, receivingAccount }: {amount: string, receivingAccount?: string}) {
+        async buyRam({ amount, receivingAccount }: { amount: string; receivingAccount?: string }) {
             let transaction = null;
             const actions = [
                 {
@@ -685,7 +692,7 @@ export const useAccountStore = defineStore('account', {
                 this.setTransactionError(e);
             }
         },
-        async buyRamBytes({ amount, receivingAccount }: {amount: string, receivingAccount?: string}) {
+        async buyRamBytes({ amount, receivingAccount }: { amount: string; receivingAccount?: string }) {
             let transaction = null;
             const actions = [
                 {
@@ -720,7 +727,7 @@ export const useAccountStore = defineStore('account', {
                 this.setTransactionError(e);
             }
         },
-        async sellRam({ amount }: {amount: string}) {
+        async sellRam({ amount }: { amount: string }) {
             let transaction = null;
             const actions = [
                 {
@@ -754,9 +761,9 @@ export const useAccountStore = defineStore('account', {
                 this.setTransactionError(e);
             }
         },
-        async moveToSavings({ amount }: {amount: string}) {
+        async moveToSavings({ amount }: { amount: string }) {
             let transaction = null;
-            const rexToUnstake = formatCurrency((+amount / this.tlosRexRatio), 4, 'REX', true);
+            const rexToUnstake = formatCurrency(+amount / this.tlosRexRatio, 4, 'REX', true);
             const actions = [
                 {
                     account: 'eosio',
@@ -790,9 +797,9 @@ export const useAccountStore = defineStore('account', {
                 this.setTransactionError(e);
             }
         },
-        async moveFromSavings({ amount }: {amount: string}) {
+        async moveFromSavings({ amount }: { amount: string }) {
             let transaction = null;
-            const rexToUnstake = formatCurrency((+amount / this.tlosRexRatio), 4, 'REX', true);
+            const rexToUnstake = formatCurrency(+amount / this.tlosRexRatio, 4, 'REX', true);
 
             const actions = [
                 {
@@ -827,6 +834,199 @@ export const useAccountStore = defineStore('account', {
                 this.setTransactionError(e);
             }
         },
+        async stakeKoy({ amount }: { amount: string }) {
+            let transaction = null;
+            const amountToStake = formatCurrency(amount, 4, symbol, true);
+
+            const actions = [
+                {
+                    account: 'launch.stake',
+                    name: 'stake',
+                    authorization: [
+                        {
+                            actor: this.accountName,
+                            permission: this.accountPermission,
+                        },
+                    ],
+                    data: {
+                        account: this.accountName,
+                        asset_amount: amountToStake,
+                    },
+                },
+            ];
+            try {
+                transaction = await this.user.signTransaction(
+                    {
+                        actions,
+                    },
+                    {
+                        blocksBehind: 3,
+                        expireSeconds: 180,
+                    },
+                );
+                this.setTransaction(transaction.transactionId);
+                void this.loadAccountData();
+                void this.updateKoyStakedData({ account: this.accountName });
+            } catch (e) {
+                this.setTransactionError(e);
+            }
+        },
+        async unstakeKoy({ amount }: { amount: string }) {
+            let transaction = null;
+            const amountToUnstake = formatCurrency(amount, 4, symbol, true);
+
+            const actions = [
+                {
+                    account: 'launch.stake',
+                    name: 'unstake',
+                    authorization: [
+                        {
+                            actor: this.accountName,
+                            permission: this.accountPermission,
+                        },
+                    ],
+                    data: {
+                        account: this.accountName,
+                        asset_amount: amountToUnstake,
+                    },
+                },
+            ];
+            try {
+                transaction = await this.user.signTransaction(
+                    {
+                        actions,
+                    },
+                    {
+                        blocksBehind: 3,
+                        expireSeconds: 180,
+                    },
+                );
+                void this.setTransaction(transaction.transactionId);
+                void this.loadAccountData();
+                void this.updateKoyStakedData({ account: this.accountName });
+            } catch (e) {
+                this.setTransactionError(e);
+            }
+        },
+        async updateKoyStakedData({ account }: { account: string }) {
+            const paramsLiquidBal = {
+                code: 'eosio.token',
+                scope: account,
+                table: 'accounts',
+            } as GetTableRowsParams;
+            const paramsStakedBal = {
+                code: 'launch.stake',
+                scope: 'launch.stake',
+                table: 'stakes',
+                lower_bound: Name.from(account),
+                upper_bound: Name.from(account),
+            } as GetTableRowsParams;
+            const paramsConfiga = {
+                code: 'launch.stake',
+                scope: 'launch.stake',
+                table: 'configa',
+                limit: 1,
+            } as GetTableRowsParams;
+
+            const liquidBalRow = ((await api.getTableRows(paramsLiquidBal)) as AccountsRows).rows[0];
+            const stakedBalRow = ((await api.getTableRows(paramsStakedBal)) as StakedbalRows).rows[0];
+
+            const liquidValue = Number(liquidBalRow.balance?.split(' ')[0]);
+            const unstakedBal = Number(stakedBalRow?.unstaked_balance.split(' ')[0]) || 0;
+            const stakedBal = Number(stakedBalRow?.balance.split(' ')[0]) - unstakedBal || 0;
+            const lastUnstakeTime = stakedBalRow ? new Date(stakedBalRow?.last_unstake_time) : new Date();
+
+            // Available to Unstake values
+            const unstakingPeriodSeconds =
+            stakedBalRow?.staker_group === 1 ? 4 * 365 * 24 * 60 * 60 : 6 * 30 * 24 * 60 * 60;
+            const withdrawSpeedVal = stakedBal / unstakingPeriodSeconds;
+
+            const timeSinceLastUnstake = Math.floor(new Date().getTime() / 1000) - lastUnstakeTime?.getTime() / 1000;
+            const availableToUnstakeVal = Math.max(timeSinceLastUnstake * withdrawSpeedVal, 0);
+
+            // Claim Rewards calculation
+            const configaTableResult = (await api.getTableRows(paramsConfiga)) as ConfigaRows;
+            const dailyYieldPercentage = configaTableResult.rows[0].daily_yield_percentage;
+
+            const lastClaimTime = stakedBalRow ? new Date(stakedBalRow?.last_claim_date) : new Date();
+            const timeSinceLastClaim = Math.floor(new Date().getTime() / 1000) - lastClaimTime?.getTime() / 1000;
+            const dailyYield = (stakedBal * (dailyYieldPercentage / 1_000_000)) / 100;
+            const claimableAmountVal = Math.max((dailyYield / (24 * 60 * 60)) * timeSinceLastClaim, 0);
+
+            void this.setKoyWalletValue({
+                liquidValue,
+                stakedBal,
+                unstakedBal,
+                lastUnstakeTime,
+                lastClaimTime,
+                availableToUnstakeVal,
+                claimableAmountVal,
+                withdrawSpeedVal: withdrawSpeedVal,
+            });
+        },
+        setKoyWalletValue({
+            stakedBal,
+            liquidValue,
+            unstakedBal,
+            lastUnstakeTime,
+            lastClaimTime,
+            availableToUnstakeVal,
+            claimableAmountVal,
+            withdrawSpeedVal,
+        }: {
+            stakedBal: number;
+            liquidValue: number;
+            unstakedBal: number;
+            lastUnstakeTime: Date;
+            lastClaimTime: Date;
+            availableToUnstakeVal: number;
+            claimableAmountVal: number;
+            withdrawSpeedVal: number;
+        }) {
+            // should we store string like 0.0000 KOYN or the value by itself?
+            this.stakedBal = stakedBal;
+            this.unstakedBal = unstakedBal;
+            this.liquidValue = liquidValue;
+            this.lastUnstakeTime = lastUnstakeTime;
+            this.lastClaimTime = lastClaimTime;
+            this.availableToUnstakeVal = availableToUnstakeVal;
+            this.claimableAmountVal = claimableAmountVal;
+            this.withdrawSpeedVal = withdrawSpeedVal;
+        },
+        async claimRewards() {
+            let transaction = null;
+
+            const actions = [
+                {
+                    account: 'launch.stake',
+                    name: 'claimrewards',
+                    authorization: [
+                        {
+                            actor: this.accountName,
+                            permission: this.accountPermission,
+                        },
+                    ],
+                    data: {
+                        account: this.accountName,
+                    },
+                },
+            ];
+            try {
+                transaction = await this.user.signTransaction(
+                    {
+                        actions,
+                    },
+                    {
+                        blocksBehind: 3,
+                        expireSeconds: 180,
+                    },
+                );
+                void this.setTransaction(transaction.transactionId);
+                void this.loadAccountData();
+                void this.updateKoyStakedData({ account: this.accountName });
+            } catch (e) {
+                void this.setTransactionError(e);
+            }
+        },
     },
 });
-
