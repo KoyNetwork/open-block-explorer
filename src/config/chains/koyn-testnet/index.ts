@@ -20,7 +20,7 @@ import { Theme } from 'src/types/Theme';
 import { Token } from 'src/types';
 import { UiCustomization } from 'src/types/UiCustomization';
 const CHAIN_ID =
-  '2081223fcffc96ce2d22ab63df414d1d6bf2f64f2e2922d500808decacd8b8b';
+  '2081223fcffc96ce2d22ab63df414d1d6bf2f64f2e2922d500808decacd8b8b9';
 const NAME = 'koyn-testnet';
 const DISPLAY = 'Koyn';
 const TOKEN = {
@@ -32,17 +32,12 @@ const TOKEN = {
 const HYPERION_ENDPOINT = 'https://hyptest.koy.network';
 const RPC_ENDPOINT = {
     protocol: 'https',
-    host: 'testnet.koyn.goodblock.io',
+    host: 'testnet.koy.network',
     port: 443,
 };
-const FUEL_RPC_ENDPOINT = {
-    protocol: 'https',
-    host: 'testnet.koyn.goodblock.io',
-    port: 443,
-};
-const API_ENDPOINT = 'https://testnet.koyn.goodblock.io/v1';
+const API_ENDPOINT = 'https://testnet.koy.network/v1';
 const S3_PRODUCER_BUCKET = '';
-const DISPLAY_MAP = false;
+const DISPLAY_MAP = true;
 const THEME = {
     primary: '#90B862',
     secondary: '#006600',
@@ -52,7 +47,7 @@ const THEME = {
     negative: '#ff0000',
     info: '#31CCEC',
     warning: '#F2C037',
-    'color-map': '#115820',
+    'color-map': '#38442d',
     'color-background': '#90B86226',
     'color-background-gradient': 'linear-gradient(132.08deg, rgba(255, 255, 255, 0.325) 0%, rgba(255, 255, 255, 0.1235) 52.08%, rgba(255, 255, 255, 0) 100%)',
     'color-primary-gradient': 'linear-gradient(90deg, #006600 0%, #2eb840 100%)',
@@ -90,7 +85,7 @@ export default class KoynTestnet extends BaseChain {
         return RPC_ENDPOINT;
     }
     getFuelRPCEndpoint(): RpcEndpoint | null {
-        return FUEL_RPC_ENDPOINT;
+        return null;
     }
     getApiEndpoint(): string {
         return API_ENDPOINT;
@@ -131,7 +126,7 @@ export default class KoynTestnet extends BaseChain {
                 { label: 'PRIVACY', url: 'https://koy.network/privacy-policy' },
             ],
             headerSettings: {
-                hideLoginHandler: true,
+                hideLoginHandler: false,
 
                 hideNetworkTab: true,
                 hideWalletTab: true,
@@ -155,6 +150,10 @@ export default class KoynTestnet extends BaseChain {
                 hideChildrenTab: true,
                 hideContractsTab: false,
                 hideCreatedBy: true,
+            },
+            networkPageSettings: {
+                hideMapData: true,
+                hidePriceChart: true,
             },
         };
     }

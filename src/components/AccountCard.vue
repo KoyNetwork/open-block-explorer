@@ -5,7 +5,10 @@ import PercentCircle from 'src/components/PercentCircle.vue';
 import SendDialog from 'src/components/SendDialog.vue';
 import ResourcesDialog from 'src/components/resources/ResourcesDialog.vue';
 import StakingDialog from 'src/components/staking/StakingDialog.vue';
+import KoyStakingDialog from 'src/components/koyStaking/StakingDialog.vue';
 import DateField from 'src/components/DateField.vue';
+import NumberFormat from 'src/components/NumberFormat.vue';
+import VueMarkdown from 'vue-markdown-render';
 import { date, useQuasar, copyToClipboard } from 'quasar';
 import { getChain } from 'src/config/ConfigManager';
 import { api } from 'src/api';
@@ -15,7 +18,6 @@ import { API, UInt64 } from '@greymass/eosio';
 import { formatCurrency } from 'src/utils/string-utils';
 import ConfigManager from 'src/config/ConfigManager';
 import { AccountPageSettings } from 'src/types/UiCustomization';
-import { StakedbalRows } from 'src/types/TableRows';
 import { useResourceStore } from 'src/stores/resources';
 import { useChainStore } from 'src/stores/chain';
 import { useAccountStore } from 'src/stores/account';
@@ -30,6 +32,9 @@ export default defineComponent({
         ResourcesDialog,
         DateField,
         StakingDialog,
+        KoyStakingDialog,
+        NumberFormat,
+        VueMarkdown,
     },
     props: {
         account: {
@@ -46,6 +51,8 @@ export default defineComponent({
         const profileStore = useProfileStore();
 
         const accountPageSettings = computed((): AccountPageSettings => ConfigManager.get().getCurrentChain().getUiCustomization().accountPageSettings);
+
+        const isKoyChain = computed((): boolean => chain.getName() === 'koyn' || chain.getName() === 'koyn-testnet');
 
         const createTime = ref<string>('2019-01-01T00:00:00.000');
         const createTransaction = ref<string>('');
@@ -79,15 +86,21 @@ export default defineComponent({
         const radius = ref(44);
         const stakedResources = ref(0);
 
-        const stakedBal = ref(0);
-        const unstakedBal = ref(0);
+        const stakedBal = computed((): number => accountStore.stakedBal);
+        const unstakedBal = computed((): number => accountStore.unstakedBal);
+        const availableToUnstake = computed((): number => accountStore.availableToUnstakeVal);
+        const availableToClaim = computed((): number => accountStore.claimableAmountVal);
+        const lastClaim = computed((): Date => accountStore.lastClaimTime);
+        const lastUnstake = computed((): Date =>  accountStore.lastUnstakeTime);
 
         const accountExists = ref<boolean>(true);
         const openSendDialog = ref<boolean>(false);
         const openResourcesDialog = ref<boolean>(false);
         const openStakingDialog = ref<boolean>(false);
+        const openKoyStakingDialog = ref<boolean>(false);
 
         const accountData = ref<API.v1.AccountObject>();
+        const profileData = computed(() => profileStore.profile);
         const availableTokens = ref<Token[]>([]);
 
 
@@ -96,14 +109,12 @@ export default defineComponent({
             (accountData.value?.refund_request?.net_amount.value ?? 0),
         );
 
-
-        const staked = computed((): number => stakedRefund.value + stakedNET.value + stakedCPU.value);
-
         const token = computed((): Token => chainStore.token);
 
+        const liquidValue = computed((): number => accountStore.liquidValue);
         const liquidNative = computed((): number => accountData.value?.core_liquid_balance?.value
             ? accountData.value.core_liquid_balance.value
-            : 0);
+            : liquidValue.value);
 
         const totalValue = computed((): number => {
             if (typeof totalTokens.value === 'number') {
@@ -132,7 +143,7 @@ export default defineComponent({
 
         let profile = computed(() => profileStore.profiles.get(props.account));
 
-
+        const showProfileData = computed(() => profileData.value.displayName !== '' || profileData.value.status !== '' || profileData.value.bio !== '');
         const setToken = (value: Token) => {
             void chainStore.setToken(value);
         };
@@ -141,11 +152,12 @@ export default defineComponent({
             try {
                 isLoading.value = true;
                 accountData.value = await api.getAccount(props.account);
+                await profileStore.loadProfileInformation({ account: props.account });
                 await loadAccountCreatorInfo();
                 await loadProfile();
                 await loadBalances();
                 loadResources();
-                await loadStakedBalance();
+                await accountStore.updateKoyStakedData({ account: props.account });
                 setTotalBalance();
                 await updateTokenBalances();
                 await updateResources({ account: props.account, force: true });
@@ -218,7 +230,7 @@ export default defineComponent({
         };
 
         const setTotalBalance = () => {
-            totalTokens.value = liquidNative.value + rex.value + staked.value + delegatedToOthers.value + stakedBal.value + unstakedBal.value;
+            totalTokens.value = liquidNative.value + stakedBal.value;
             isLoading.value = false;
         };
 
@@ -309,27 +321,6 @@ export default defineComponent({
             return total;
         };
 
-        const loadStakedBalance = async () => {
-            try {
-                const paramsStakedBal = {
-                    code: 'launch.stake',
-                    scope: 'launch.stake',
-                    table: 'stakes',
-                    lower_bound: props.account as unknown as TableIndexType,
-                    upper_bound: props.account as unknown as TableIndexType,
-                } as GetTableRowsParams;
-
-                const stakedBalRow = ((await api.getTableRows(paramsStakedBal)) as StakedbalRows)
-                    .rows[0];
-
-                stakedBal.value = Number(stakedBalRow.balance.split(' ')[0]);
-                unstakedBal.value = Number(stakedBalRow.unstaked_balance.split(' ')[0]);
-            } catch (e) {
-                stakedBal.value = 0;
-                unstakedBal.value = 0;
-            }
-        };
-
         const fixDec = (val: number): number => parseFloat(val.toFixed(3));
 
         const loadSystemToken = (): void => {
@@ -395,14 +386,27 @@ export default defineComponent({
             rexDeposits.value = 0;
         };
 
+        const claimRewards = () => {
+            console.log('claim rewards');
+            void accountStore.claimRewards();
+        };
+
         onMounted(async () => {
-            usdPrice.value = await chain.getUsdPrice();
-            await loadAccountData();
-            await accountStore.updateRexData({
-                account: props.account,
-            });
-            loadSystemToken();
-            void chainStore.updateRamPrice();
+            try {
+                usdPrice.value = await chain.getUsdPrice();
+                await loadAccountData();
+                if (!accountPageSettings.value.hideRexInfo) {
+                    await accountStore.updateRexData({
+                        account: props.account,
+                    });
+                }
+                loadSystemToken();
+                if (!accountPageSettings.value.hideRamInfo) {
+                    void chainStore.updateRamPrice();
+                }
+            } catch(e) {
+                console.error(e);
+            }
         });
 
         watch(
@@ -418,6 +422,7 @@ export default defineComponent({
 
         return {
             accountPageSettings,
+            isKoyChain,
             MICRO_UNIT,
             KILO_UNIT,
             stakedCPU,
@@ -430,6 +435,10 @@ export default defineComponent({
             ram_max,
             stakedBal,
             unstakedBal,
+            availableToClaim,
+            availableToUnstake,
+            lastUnstake,
+            lastClaim,
             creatingAccount,
             isLoading,
             tokensLoading,
@@ -450,6 +459,7 @@ export default defineComponent({
             openSendDialog,
             openResourcesDialog,
             openStakingDialog,
+            openKoyStakingDialog,
             delegatedByOthers,
             delegatedToOthers,
             isAccount,
@@ -466,7 +476,10 @@ export default defineComponent({
             copy,
             formatAsset,
             updateTokenBalances,
+            claimRewards,
             profile,
+            profileData,
+            showProfileData,
         };
     },
 });
@@ -478,41 +491,46 @@ export default defineComponent({
     <q-card v-if="accountExists" class="account-card">
         <q-card-section class="resources-container">
             <div class="inline-section">
-                <div class="items-center justify-center row full-height q-gutter-sm">
-                    <img v-if="profile?.avatar" class="avatar-image" :src="profile.avatar" >
-                    <div class="justify-center column">
-                        <div class="items-center row">
-                            <div class="text-title">{{ account }}</div>
-                            <q-btn
-                                class="float-right"
-                                flat
-                                round
-                                color="white"
-                                icon="content_copy"
-                                size="sm"
-                                @click="copy(account)"
-                            />
+                <div class="items-center justify-center column full-height q-gutter-sm q-mb-md">
+                    <div class="items-center row">
+                        <div class="text-title">{{ account }}</div>
+                        <q-btn
+                            class="float-right"
+                            flat
+                            round
+                            color="white"
+                            icon="content_copy"
+                            size="sm"
+                            @click="copy(account)"
+                        />
+                    </div>
+                    <div v-show="!accountPageSettings.hideCreatedBy">
+                        <div
+                            v-if="creatingAccount && creatingAccount !== '__self__'"
+                            class="text-subtitle"
+                        >
+                            created by
+                            <span>&nbsp;<a @click="loadCreatorAccount">{{ creatingAccount }}</a>&nbsp;</span>
+                            <div>
+                                <DateField :timestamp="createTime" showAge>&nbsp;</DateField>
+                                <q-tooltip>{{createTimeFormat}}</q-tooltip>
+                            </div><a class="q-ml-xs tx-link" @click="loadCreatorTransaction">
+                                <q-icon name="fas fa-link"/></a>
                         </div>
-                        <div v-show="!accountPageSettings.hideCreatedBy">
-                            <div
-                                v-if="creatingAccount && creatingAccount !== '__self__'"
-                                class="text-subtitle"
-                            >
-                                created by
-                                <span>&nbsp;<a @click="loadCreatorAccount">{{ creatingAccount }}</a>&nbsp;</span>
-                                <div>
-                                    <DateField :timestamp="createTime" showAge>&nbsp;</DateField>
-                                    <q-tooltip>{{createTimeFormat}}</q-tooltip>
-                                </div><a class="q-ml-xs tx-link" @click="loadCreatorTransaction">
-                                    <q-icon name="fas fa-link"/></a>
-                            </div>
-                            <div v-else class="text-subtitle">created<span>&nbsp;</span>
-                                <div>
-                                    <DateField :timestamp="createTime" showAge>&nbsp;</DateField>
-                                    <q-tooltip>{{createTimeFormat}}</q-tooltip>
-                                </div>
+                        <div v-else class="text-subtitle">created<span>&nbsp;</span>
+                            <div>
+                                <DateField :timestamp="createTime" showAge>&nbsp;</DateField>
+                                <q-tooltip>{{createTimeFormat}}</q-tooltip>
                             </div>
                         </div>
+                    </div>
+                </div>
+                <div class="items-center justify-center row full-height q-gutter-sm text-body1">
+                    <img v-if="profile?.avatar" class="avatar-image col-4" :src="profile.avatar" >
+                    <div v-show="showProfileData" class="justify-center column col-8 q-ml-md">
+                        <VueMarkdown v-show="profileData.displayName !== ''" class="text-h5" :source="profileData.displayName" />
+                        <VueMarkdown v-show="profileData.status !== ''" :source="profileData.status" />
+                        <VueMarkdown v-show="profileData.bio !== ''" :source="profileData.bio" />
                     </div>
                 </div>
                 <q-space/>
@@ -576,6 +594,24 @@ export default defineComponent({
                         @click="openStakingDialog = true"
                     />
                 </div>
+                <div v-if="isAccount && isKoyChain" class="col-3">
+                    <q-btn
+                        :disable="tokensLoading || isLoading"
+                        :label='tokensLoading ? "Loading..." : "Staking"'
+                        class="ellipsis full-width"
+                        color="primary"
+                        @click="openKoyStakingDialog = true"
+                    />
+                </div>
+                <div v-if="isAccount && isKoyChain">
+                    <q-btn
+                        :disable="tokensLoading || isLoading"
+                        :label='tokensLoading ? "Loading..." : "Claim"'
+                        class="ellipsis full-width"
+                        color="primary"
+                        @click="claimRewards"
+                    />
+                </div>
             </div>
         </q-card-section>
         <q-markup-table>
@@ -589,51 +625,65 @@ export default defineComponent({
                         <td v-if="isLoading" class="text-right total-amount total-loading-spinner">
                             <q-spinner color="white" size="1.5em"/>
                         </td>
-                        <td v-else class="text-right total-amount">{{ formatAsset(totalTokens) }}</td>
-                    </tr>
+                        <td class="text-right"><NumberFormat class="total-amount" :valueToFormat="totalTokens"/></td>                    </tr>
                     <tr v-show="!isLoading && totalValueString.length > 0" class="total-row">
                         <td class="text-left"></td>
-                        <td class="text-right total-value">{{ totalValueString }}</td>
-                    </tr>
+                        <td class="text-right"><NumberFormat class="total-value" :valueToFormat="totalValueString"/></td>                    </tr>
                     <tr>
                         <td class="text-left">LIQUID</td>
-                        <td class="text-right">{{ formatAsset(liquidNative) }}</td>
+                        <td class="text-right"><NumberFormat :valueToFormat="liquidNative"/></td>
                     </tr>
                     <tr v-if="!accountPageSettings.hideRexInfo">
                         <td class="text-left">REX staked (includes savings)</td>
-                        <td class="text-right">{{ formatAsset(rexStaked) }}</td>
+                        <td class="text-right"><NumberFormat :valueToFormat="rexStaked"/></td>
                     </tr>
                     <tr v-if="!accountPageSettings.hideRexInfo">
                         <td class="text-left">REX liquid deposits</td>
-                        <td class="text-right">{{ formatAsset(rexDeposits) }}</td>
+                        <td class="text-right"><NumberFormat :valueToFormat="rexDeposits"/></td>
                     </tr>
                     <tr v-if="!accountPageSettings.hideCpuInfo">
                         <td class="text-left">STAKED for CPU</td>
-                        <td class="text-right">{{ formatAsset(stakedCPU) }}</td>
+                        <td class="text-right"><NumberFormat :valueToFormat="stakedCPU"/></td>
                     </tr>
                     <tr v-if="!accountPageSettings.hideNetInfo">
                         <td class="text-left">STAKED for NET</td>
-                        <td class="text-right">{{ formatAsset(stakedNET) }}</td>
+                        <td class="text-right"><NumberFormat :valueToFormat="stakedNET"/></td>
                     </tr>
                     <tr v-if="!accountPageSettings.hideRefundingInfo">
                         <td class="text-left">REFUNDING from staking</td>
-                        <td class="text-right">{{ formatAsset(stakedRefund) }}</td>
+                        <td class="text-right"><NumberFormat :valueToFormat="stakedRefund"/></td>
                     </tr>
                     <tr v-if="!accountPageSettings.hideDelegatedInfo">
                         <td class="text-left">DELEGATED to others</td>
-                        <td class="text-right">{{ formatAsset(delegatedToOthers) }}</td>
+                        <td class="text-right"><NumberFormat :valueToFormat="delegatedToOthers"/></td>
                     </tr>
                     <tr v-if="!accountPageSettings.hideDelegatedInfo">
                         <td class="text-left">DELEGATED by others</td>
-                        <td class="text-right">{{ formatAsset(delegatedByOthers) }}</td>
+                        <td class="text-right"><NumberFormat :valueToFormat="delegatedByOthers"/></td>
                     </tr>
                     <tr>
                         <td class="text-left">STAKED</td>
-                        <td class="text-right">{{ formatAsset(stakedBal) }}</td>
+                        <td class="text-right"><NumberFormat :valueToFormat="stakedBal"/></td>
                     </tr>
                     <tr>
                         <td class="text-left">UNSTAKED</td>
-                        <td class="text-right">{{ formatAsset(unstakedBal) }}</td>
+                        <td class="text-right"><NumberFormat :valueToFormat="unstakedBal"/></td>
+                    </tr>
+                    <tr>
+                        <td class="text-left">AVAILABLE TO CLAIM</td>
+                        <td class="text-right">{{ formatAsset(availableToClaim) }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-left">LAST CLAIM</td>
+                        <td class="text-right">{{ lastClaim?.toDateString() }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-left">AVAILABLE TO UNSTAKE</td>
+                        <td class="text-right">{{ formatAsset(availableToUnstake) }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-left">LAST UNSTAKE</td>
+                        <td class="text-right">{{ lastUnstake?.toDateString() }}</td>
                     </tr>
                 </tbody>
             </thead>
@@ -651,6 +701,10 @@ export default defineComponent({
             />
             <StakingDialog
                 v-model="openStakingDialog"
+                :availableTokens="availableTokens"
+            />
+            <KoyStakingDialog
+                v-model="openKoyStakingDialog"
                 :availableTokens="availableTokens"
             />
         </div>

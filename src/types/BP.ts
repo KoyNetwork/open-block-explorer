@@ -33,6 +33,16 @@ export interface BP {
   total_votes: number;
 }
 
+export interface KoyBP {
+  owner: string;
+  location: {
+    name: string;
+    country: string;
+    latitude: number;
+    longitude: number;
+  };
+}
+
 interface Location {
   location: {
     name: string;

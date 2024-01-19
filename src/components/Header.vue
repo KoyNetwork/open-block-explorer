@@ -60,33 +60,27 @@ export default defineComponent({
 
 <template>
 <div class="header-background">
-    <div class="row text-center q-pt-sm justify-between q-pt-md">
-        <div class="col-xs-5 col-sm-5 col-md-3 col-lg-3">
-            <div class="logo-container q-px-xs-xs q-px-sm-xs q-px-md-md q-px-lg-md">
-                <div class="logo-header-container">
-                    <div class="logo-chain-selector-container">
-                        <a class="float-left" href="/">
+    <div class="row text-center q-pa-sm q-pa-sm-md q-gutter-xs-sm justify-sm-between justify-end full-width">
+        <div class="row col-xs-12 col-sm-6 col-md-2 q-gutter-sm-x-md no-wrap">
+            <div class="flex column no-wrap q-gutter-xs items-start justify-center col-grow col-sm-shrink">
+                <div>
+                    <div class="flex row justify-between no-wrap">
+                        <a href="/">
                             <img v-if="isLarge" class="logo" :src="largeLogoPath">
-                            <img v-else class="logo-token" :src="smallLogoPath">
+                            <img v-else class="logo" :src="smallLogoPath">
                         </a>
                         <ChainsMenu v-if="showMultichainSelector"/>
                     </div>
-                    <div v-if="isTestnet" class="testnet-text">TESTNET</div>
+                    <div v-if="isTestnet" class="testnet-text text-overline full-width q-px-xs">TESTNET</div>
                 </div>
-                <div>
-                    <div class="col-12 text-caption text-uppercase text-bold">Head Block</div>
-                    <div class="col-12 text-caption text-bold">{{headBlock}}</div>
-                </div>
+            </div>
+            <div>
+                <div class="col-sm-6 text-caption">Head Block</div>
+                <div class="col-sm-6 text-body2 text-bold">{{headBlock}}</div>
             </div>
         </div>
-        <div class="col-xs-4 col-sm-4 col-md-4 col-lg-6">
-            <div class="q-px-xs-xs q-px-sm-xs q-px-md-md q-px-lg-md">
-                <div class="row justify-center full-width">
-                    <div class="col-12">
-                        <HeaderSearch/>
-                    </div>
-                </div>
-            </div>
+        <div class="row col-8 col-sm-6 col-lg-4">
+            <HeaderSearch/>
         </div>
         <LoginHandler v-if="!headerSettings.hideLoginHandler"/>
     </div>
@@ -134,44 +128,14 @@ export default defineComponent({
 <style lang="sass" scoped>
 .q-tab
     text-transform: unset
-    font-size: 18px
-
-.logo-container
-    display: flex
-
-.logo-header-container
-    position: relative
-    display: flex
-    flex-direction: column
-    gap: 8px
-    width: fit-content
-
-.logo-chain-selector-container
-    padding-left: 4px
-    display: flex
-    flex-direction: row
-    justify-content: space-between
-    a
-        margin-right: 4px
+    font-size: 1rem
 
 .logo
-  width: 104px
-  height:40px
-  object-fit: contain
-
-.logo-token
-  width: 40px
   height: 40px
   object-fit: contain
 
 .testnet-text
-    position: absolute
-    bottom: -20px
     color: white
-    font-size: 10px
-    width: 100%
-    height: min-content
-    padding: 4px 8px
     border-radius: 4px
     background-color: rgba(white, 0.1)
 

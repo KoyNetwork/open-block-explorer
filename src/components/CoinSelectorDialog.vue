@@ -52,33 +52,27 @@ export default defineComponent({
 <template>
 
 <q-dialog class="dialogContainer" @show="filterTokens">
-    <q-card class="dialogCard">
-        <div class="dialogHeader">
-            <div class="row justify-between items-center q-pt-sm-center">
-                <div class="text-h6 q-pl-md">Select a token</div>
-                <div class="q-pr-sm">
-                    <q-btn
-                        v-close-popup
-                        size="12px"
-                        flat
-                        dense
-                        round
-                        icon="clear"
-                    />
-                </div>
+    <q-card class="q-pa-md dialogCard">
+        <div class="q-mb-md dialogHeader">
+            <div class="row justify-between items-center q-mb-sm">
+                <div class="text-h6">Select a token</div>
+                <q-btn
+                    v-close-popup
+                    size="12px"
+                    dense
+                    flat
+                    icon="clear"
+                />
             </div>
-            <div class="row">
-                <div class="col-12 q-pa-sm">
-                    <q-input
-                        v-model="search"
-                        debounce="500"
-                        outlined
-                        dark
-                        round="round"
-                        placeholder="Search contract name or symbol"
-                    />
-                </div>
-            </div>
+            <q-input
+                v-model="search"
+                debounce="500"
+                outlined
+                dark
+                round
+                placeholder="Search contract name or symbol"
+                class="full-width"
+            />
         </div>
         <q-separator/>
         <q-list class="dialogList">
@@ -87,6 +81,7 @@ export default defineComponent({
                 :key="`${token.contract}-${token.symbol}`"
                 v-close-popup
                 clickable
+                class="flex justify-between full-width"
                 @click="updateSelectedCoin(token);"
             >
                 <q-item-section>
@@ -94,7 +89,7 @@ export default defineComponent({
                     <q-item-label>{{ token.contract }}</q-item-label>
                 </q-item-section>
                 <q-item-section>
-                    <q-item-label>{{ token.amount }}</q-item-label>
+                    <q-item-label class="text-right">{{ token.amount }}</q-item-label>
                 </q-item-section>
             </q-item>
             <q-item v-if="availableTokens.length == 0">No tokens found</q-item>
@@ -104,27 +99,15 @@ export default defineComponent({
 </template>
 
 <style lang="sass" scoped>
-.dialogCard
-  flex: 0 1 350px
-  height: 80vh
-
-.greyItem
-  background: rgba($grey-4, 20%)
 
 .addToken
   text-decoration: underline
   cursor: pointer
 
-.addBtn
-  color: white
-  background-image: linear-gradient(to right, $deep-purple-2 20%, $light-blue-6 80% )
-
-  &:hover
-    background-image: linear-gradient(to left, $deep-purple-2 20%, $light-blue-6 80%)
-
 .dialogCard
-  background: radial-gradient(circle at 48% 100%, rgba(108, 35, 255, 1) 0%, rgba(84, 0, 253, 1) 20%, rgba(2, 27, 100, 1) 92%)
+  background-image: linear-gradient(to left, var(--q-color-background), var(--q-color-background)), var(--q-color-background-gradient)
   color: white
+  min-height: 50vh
 
   // Hide scrollbar for Chrome, Safari and Opera
   &::-webkit-scrollbar
@@ -139,7 +122,7 @@ export default defineComponent({
   position: -webkit-sticky
   top: 0
   z-index: 1
-  background: inherit
+  min-width: 290px
 
 .dialogList
   z-index: -1

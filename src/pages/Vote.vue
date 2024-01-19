@@ -20,7 +20,7 @@ export default defineComponent({
                 accountStore.setAccountData(data);
             }
 
-            await chainStore.updateBpList();
+            chainStore.updateBpList();
 
             window.setInterval(() => {
                 void chainStore.updateBlockData();
