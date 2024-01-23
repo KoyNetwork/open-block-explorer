@@ -54,66 +54,62 @@ export default defineComponent({
 });
 </script>
 <template>
-<q-dialog ref="walletDialog" class="modal-container">
-    <div class="modal-header-container">
-        <q-icon name="add_circle_outline" color="white" :size="iconSize"/>
-        <h3 class="modal-header">Attach an account</h3>
+<q-dialog ref="walletDialog" maximized class="modal-container">
+    <div class="authenticatorsCard column items-center q-pt-xl full-height full-width">
+        <div class="absolute-top-right">
+            <q-btn
+                v-close-popup
+                size="20px"
+                flat
+                dense
+                round
+                icon="clear"
+            />
+        </div>
+        <div class="modal-header-container">
+            <h3 class="modal-header text-h4">Choose your sign in method</h3>
+        </div>
+        <q-list>
+            <q-item
+                v-for="(wallet, idx) in $ual.getAuthenticators().availableAuthenticators"
+                :key="wallet.getStyle().text"
+                v-ripple
+                :style="{background: wallet.getStyle().background, color: wallet.getStyle().textColor}"
+            >
+                <q-item-section class="cursor-pointer" avatar @click="onLogin(idx)"><img :src="wallet.getStyle().icon" width="32"></q-item-section>
+                <q-item-section class="cursor-pointer text-h6" @click="onLogin(idx)">{{ wallet.getStyle().text }}</q-item-section>
+                <q-item-section class="flex" avatar>
+                    <q-spinner v-if="loading === wallet.getStyle().text" :color="wallet.getStyle().textColor" size="2em"/>
+                    <q-btn
+                        v-else
+                        :color="wallet.getStyle().textColor"
+                        icon="get_app"
+                        target="_blank"
+                        dense
+                        flat
+                        size="12px"
+                        @click="openUrl(wallet.getOnboardingLink())"
+                    >
+                        <q-tooltip>Get app</q-tooltip>
+                    </q-btn>
+                </q-item-section>
+            </q-item>
+            <q-item v-if="error" :active="!!error" active-class="bg-red-1 text-grey-8">
+                <q-item-section>{{ error }}</q-item-section>
+            </q-item>
+        </q-list>
     </div>
-    <q-separator/>
-    <q-list>
-        <q-item
-            v-for="(wallet, idx) in $ual.getAuthenticators().availableAuthenticators"
-            :key="wallet.getStyle().text"
-            v-ripple
-            :style="{background: wallet.getStyle().background, color: wallet.getStyle().textColor}"
-        >
-            <q-item-section class="cursor-pointer" avatar @click="onLogin(idx)"><img :src="wallet.getStyle().icon" width="30"></q-item-section>
-            <q-item-section class="cursor-pointer" @click="onLogin(idx)">{{ wallet.getStyle().text }}</q-item-section>
-            <q-item-section class="flex" avatar>
-                <q-spinner v-if="loading === wallet.getStyle().text" :color="wallet.getStyle().textColor" size="2em"/>
-                <q-btn
-                    v-else
-                    :color="wallet.getStyle().textColor"
-                    icon="get_app"
-                    target="_blank"
-                    dense
-                    flat
-                    size="12px"
-                    @click="openUrl(wallet.getOnboardingLink())"
-                >
-                    <q-tooltip>Get app</q-tooltip>
-                </q-btn>
-            </q-item-section>
-        </q-item>
-        <q-item v-if="error" :active="!!error" active-class="bg-red-1 text-grey-8">
-            <q-item-section>{{ error }}</q-item-section>
-        </q-item>
-    </q-list>
 </q-dialog>
 </template>
 
 <style lang="sass">
-.fixed-full
-  flex-direction: column
 .modal-container
-  background: radial-gradient(50% 67.35% at 50% 67.35%, #8A65D4 0%,  rgb(9, 26, 98, 100))
-.modal-header
-  margin-left: 0.6rem
-  color: white
-  font-size: 2.25rem
-  width: 100%
-.modal-header-container
-  display: flex
-  align-items: center
-  box-shadow: unset !important
+  background: var(--q-dark)
+.authenticatorsCard
+  background: linear-gradient(to right, var(--q-color-background), var(--q-color-background)), var(--q-color-background-gradient)
 
-// on resolutions smaller than 420px h3.modal-header will have smaller text
-  // and a smaller .modal-header-container q-icon
 @media screen and (max-width: 420px)
   h3.modal-header
     font-size: 1.5rem
-  .modal-header-container
-    padding: 0 1rem
-  .modal-container .q-dialog__inner
-    padding: 0 1rem
+
 </style>
