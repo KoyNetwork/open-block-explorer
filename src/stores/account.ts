@@ -931,22 +931,22 @@ export const useAccountStore = defineStore('account', {
             const liquidBalRow = ((await api.getTableRows(paramsLiquidBal)) as AccountsRows).rows[0];
             const stakedBalRow = ((await api.getTableRows(paramsStakedBal)) as StakedbalRows).rows[0];
 
-            const liquidValue = Number(liquidBalRow.balance?.split(' ')[0]);
-            const unstakedBal = Number(stakedBalRow?.unstaked_balance.split(' ')[0]) || 0;
-            const stakedBal = Number(stakedBalRow?.balance.split(' ')[0]) - unstakedBal || 0;
-            const lastUnstakeTime = stakedBalRow ? new Date(stakedBalRow?.last_unstake_time) : new Date();
+            const liquidValue = liquidBalRow?.balance ? Number(liquidBalRow.balance?.split(' ')[0]) : 0;
+            const unstakedBal = stakedBalRow?.unstaked_balance ? Number(stakedBalRow?.unstaked_balance?.split(' ')[0]) : 0;
+            const stakedBal = stakedBalRow?.balance ? Number(stakedBalRow?.balance.split(' ')[0]) - unstakedBal : 0;
+            const lastUnstakeTime = stakedBalRow?.last_unstake_time ? new Date(stakedBalRow?.last_unstake_time) : new Date();
 
             // Available to Unstake values
             const unstakingPeriodSeconds =
-            stakedBalRow?.staker_group === 1 ? 4 * 365 * 24 * 60 * 60 : 6 * 30 * 24 * 60 * 60;
+            stakedBalRow?.staker_group && stakedBalRow?.staker_group === 1 ? 4 * 365 * 24 * 60 * 60 : 6 * 30 * 24 * 60 * 60;
             const withdrawSpeedVal = stakedBal / unstakingPeriodSeconds;
 
             const timeSinceLastUnstake = Math.floor(new Date().getTime() / 1000) - lastUnstakeTime?.getTime() / 1000;
             const availableToUnstakeVal = Math.max(timeSinceLastUnstake * withdrawSpeedVal, 0);
 
             // Claim Rewards calculation
-            const configaTableResult = (await api.getTableRows(paramsConfiga)) as ConfigaRows;
-            const dailyYieldPercentage = configaTableResult.rows[0].daily_yield_percentage;
+            const configa = ((await api.getTableRows(paramsConfiga)) as ConfigaRows).rows[0];
+            const dailyYieldPercentage = configa?.daily_yield_percentage || 0;
 
             const lastClaimTime = stakedBalRow ? new Date(stakedBalRow?.last_claim_date) : new Date();
             const timeSinceLastClaim = Math.floor(new Date().getTime() / 1000) - lastClaimTime?.getTime() / 1000;
