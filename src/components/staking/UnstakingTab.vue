@@ -108,7 +108,7 @@ export default defineComponent({
                     <q-input
                         ref="unstakeInput"
                         v-model="unstakeTokens"
-                        standout="bg-deep-purple-2 text-white"
+                        standout="bg-grey-5 text-white"
                         placeholder='0'
                         :lazy-rules='true'
                         :rules="[ val => val >= 0  && val < assetToAmount(maturedRex)  || 'Invalid amount.' ]"

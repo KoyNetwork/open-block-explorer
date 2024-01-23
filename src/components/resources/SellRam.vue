@@ -95,7 +95,7 @@ export default defineComponent({
             <q-input
                 v-model="sellAmount"
                 class="full-width"
-                standout="bg-deep-purple-2 text-white"
+                standout="bg-grey-5 text-white"
                 placeholder="0"
                 :lazy-rules="true"
                 :rules="inputRules"

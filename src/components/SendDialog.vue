@@ -229,7 +229,7 @@ export default defineComponent({
                                 <q-input
                                     v-model="sendAmount"
                                     class="full-width"
-                                    standout="bg-deep-purple-2 text-white"
+                                    standout="bg-grey-5 text-white"
                                     placeholder="0"
                                     :debounce="1000"
                                     :rules="[val => val > 0 && val <= sendToken?.amount || 'invalid amount' ]"
@@ -247,9 +247,9 @@ export default defineComponent({
                                     <q-input
                                         v-model="memo"
                                         class="full-width send-input"
-                                        standout="bg-deep-purple-2 text-white"
+                                        standout="bg-grey-5 text-white"
                                         dark
-                                        type="textarea"
+                                        type="text"
                                     />
                                 </div>
                             </div>

@@ -194,7 +194,7 @@ export default defineComponent({
                 <q-input
                     v-model="receivingAccount"
                     class="full-width"
-                    standout="bg-deep-purple-2 text-white"
+                    standout="bg-grey-5 text-white"
                     dense
                     dark
                     :lazy-rules="true"
@@ -212,7 +212,7 @@ export default defineComponent({
             <q-input
                 v-model="buyAmount"
                 class="full-width"
-                standout="bg-deep-purple-2 text-white"
+                standout="bg-grey-5 text-white"
                 placeholder="0"
                 :lazy-rules="true"
                 :rules="inputRules"

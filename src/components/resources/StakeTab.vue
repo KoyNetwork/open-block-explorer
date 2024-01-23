@@ -122,7 +122,7 @@ export default defineComponent({
                 <q-input
                     v-model="stakingAccount"
                     class="full-width"
-                    standout="bg-deep-purple-2 text-white"
+                    standout="bg-grey-5 text-white"
                     dense
                     dark
                     :lazy-rules="true"
@@ -142,7 +142,7 @@ export default defineComponent({
                 <q-input
                     v-model="cpuTokens"
                     class="full-width"
-                    standout="bg-deep-purple-2 text-white"
+                    standout="bg-grey-5 text-white"
                     placeholder="0"
                     :lazy-rules="true"
                     :rules="inputRules"
@@ -162,7 +162,7 @@ export default defineComponent({
                 <q-input
                     v-model="netTokens"
                     class="full-width"
-                    standout="bg-deep-purple-2 text-white"
+                    standout="bg-grey-5 text-white"
                     placeholder="0"
                     :lazy-rules="true"
                     :rules="inputRules"
