@@ -46,7 +46,7 @@ export default defineComponent({
         </div>
         <div v-if="rexActions.length === 0" class="row full-width">
             <div class="col-12">
-                <div class="row q-pa-sm">No REX transaction history</div>
+                <div class="row q-pa-sm">No transaction history</div>
             </div>
         </div>
     </div>
