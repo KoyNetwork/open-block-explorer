@@ -19,7 +19,6 @@ export default defineComponent({
         const account = computed(() => accountStore.accountName);
 
         onMounted(() => {
-            console.log(getChain().getChainId());
             const storedAccount = localStorage.getItem('account_' + getChain().getChainId());
             if (storedAccount) {
                 void accountStore.setAccountName(storedAccount);
@@ -44,17 +43,15 @@ export default defineComponent({
 </script>
 
 <template>
-<div class="col-xs-3 col-sm-3 col-md-2 col-lg-2">
-    <div class="q-px-xs-xs q-px-sm-xs q-px-md-md q-px-lg-md">
-        <LoginHandlerDropdown v-if="account"/>
-        <q-btn
-            v-else
-            class="button-primary btn-login"
-            label="Connect"
-            @click="showModal = true"
-        />
-        <WalletModal v-model="showModal"/>
-    </div>
+<div>
+    <LoginHandlerDropdown v-if="account"/>
+    <q-btn
+        v-else
+        class="button-primary btn-login"
+        label="Connect"
+        @click="showModal = true"
+    />
+    <WalletModal v-model="showModal"/>
 </div>
 </template>
 
